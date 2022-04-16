@@ -1,2 +1,0 @@
-# toastmasters
-All things Toastmasters
