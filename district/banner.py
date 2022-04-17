@@ -24,6 +24,9 @@ for shape in slide.placeholders:
 # Adding title
 slide.shapes.title.text = "Leaders Club Toastmasters"
 
+# Ref. https://python-pptx.readthedocs.io/en/latest/user/placeholders-using.html
+# Ref. https://python-pptx.readthedocs.io/en/latest/api/slides.html
+
 # Adding footer
 slide.shapes.placeholders[10].text = "Created By District 106 (C) 2022 For Spring Conference 2022"
 
