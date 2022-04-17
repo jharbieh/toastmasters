@@ -1,6 +1,13 @@
 # Christopher Toastmasters Club
-## Meeting Agenda for September 27, 2021
-### [Club Website](https://www.toastmasters.org/Find-a-Club/00000958-christopher-toastmasters-club)
+[Club Website](https://www.toastmasters.org/Find-a-Club/00000958-christopher-toastmasters-club)
+
+Club Number: 00000958  
+District: 106  
+Division: C  
+Area: 22  
+Charter Date: Jun. 1, 1951  
+
+# Meeting Agenda for September 27, 2021
 
 **6:00 pm** Meeting Preparation. Tech check. Speakers/Evaluators/Timers
 
