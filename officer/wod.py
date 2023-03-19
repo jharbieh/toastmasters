@@ -4,16 +4,20 @@ import requests
 import json
 import secrets
 import os
+import csv
 
 from dotenv import load_dotenv
 from dotenv import dotenv_values
 
-config = dotenv_values(".env")
+config = dotenv_values("..\\.env")
 
 class Wod:
     def __init__(self, key):
         self.key = key
         self.url = config["COLLEGIATE_API"]
+
+        # Print the initialized API URL
+        print(self.url)
 
     def get(self, word):
         r = requests.get(self.url + word + "?key=" + self.key)
@@ -65,5 +69,11 @@ class Wod:
             return False        
 
 if __name__ == "__main__":
+    # initialize the wod class
     wod = Wod(config["DICTIONARY_COM_API_KEY"])
-    print(wod.get_definition("hello"))
+
+    # read from csv and get the definition
+    with open("wod.csv", "r") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            print(row[0], wod.get_definition(row[0]))
