@@ -3,8 +3,3 @@ This repo is all about Toastmasters. I am using GitHub Pages to render this cont
 
 ## Table of Contents
 
-# Christopher
-Guest content is available here at: [christopher](/christopher/README.md)
-
-# Guest
-Guest content is available here at: [guest_packet.html](/guest/guest_packet.html)
