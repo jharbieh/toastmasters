@@ -66,7 +66,14 @@ class Wod:
         if r:
             return r[0]
         else:
-            return False        
+            return False   
+
+    def get_all_json(self, word):
+        r = self.get(word)
+        if r:
+            return json.dumps(r[0])
+        else:
+            return False     
 
 if __name__ == "__main__":
     # initialize the wod class
@@ -77,3 +84,5 @@ if __name__ == "__main__":
         reader = csv.reader(f)
         for row in reader:
             print(row[0], wod.get_definition(row[0]))
+            print(row[0], wod.get_all_json(row[0]))
+
