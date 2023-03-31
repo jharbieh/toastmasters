@@ -9,15 +9,12 @@ import csv
 from dotenv import load_dotenv
 from dotenv import dotenv_values
 
-config = dotenv_values("..\\.env")
+config = dotenv_values(".env")
 
 class Wod:
     def __init__(self, key):
         self.key = key
         self.url = config["COLLEGIATE_API"]
-
-        # Print the initialized API URL
-        print(self.url)
 
     def get(self, word):
         r = requests.get(self.url + word + "?key=" + self.key)
@@ -76,13 +73,38 @@ class Wod:
             return False     
 
 if __name__ == "__main__":
+
     # initialize the wod class
     wod = Wod(config["DICTIONARY_COM_API_KEY"])
-
+    
     # read from csv and get the definition
     with open("wod.csv", "r") as f:
         reader = csv.reader(f)
         for row in reader:
-            print(row[0], wod.get_definition(row[0]))
-            print(row[0], wod.get_all_json(row[0]))
+            # handle empty rows
+            if len(row) == 0:
+                continue
+
+            # handle error
+            if len(row) != 1:
+                print("Error: row should only contain one word")
+                continue
+
+            # try to get the definition
+            try:
+                definition = wod.get_definition(row[0])
+
+                # print the definition
+                print(definition)
+            except:
+                print("Error: word not found. ")
+                continue    
+
+            else:
+                print("Error: word not found. ")
+                continue
+
+            finally:
+                print("Done")                  
+           
 
