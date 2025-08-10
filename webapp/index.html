@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Toastmasters Companion</title>
+  <meta name="description" content="Modern, mobile-friendly Toastmasters meeting companion: agenda roles, Table Topics, Word of the Day, themes, timers." />
+  <!-- Brand fonts: Montserrat (headings) & Source Sans 3 (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="logo.svg" />
+  <link rel="stylesheet" href="app.css" />
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <!-- Theme colors (light/dark) aligned with brand -->
+  <meta name="theme-color" content="#772432" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#161617" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="TM Companion" />
+  <meta name="mobile-web-app-capable" content="yes" />
+</head>
+<body>
+  <noscript>This app works best with JavaScript enabled.</noscript>
+  <header class="app-header" data-elevate>
+    <button id="navToggle" class="icon-btn" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+    <h1>Toastmasters Companion</h1>
+    <div class="spacer"></div>
+    <button id="themeToggle" class="icon-btn" aria-label="Toggle theme">🌙</button>
+  </header>
+  <aside id="sidebar" class="sidebar" aria-label="Primary" data-collapsed>
+    <nav>
+      <ul>
+        <li><button data-view="dashboard" class="nav-link" aria-current="page">Dashboard</button></li>
+        <li><button data-view="roles" class="nav-link">Meeting Roles</button></li>
+        <li><button data-view="topics" class="nav-link">Table Topics</button></li>
+        <li><button data-view="wod" class="nav-link">Word of the Day</button></li>
+        <li><button data-view="themes" class="nav-link">Themes</button></li>
+        <li><button data-view="timer" class="nav-link">Speech Timer</button></li>
+        <li><button data-view="resources" class="nav-link">Resources</button></li>
+  <li><button data-view="clubs" class="nav-link">Clubs Data</button></li>
+  <li><button data-view="why" class="nav-link">Why Toastmasters</button></li>
+        <li><button data-view="about" class="nav-link">About</button></li>
+      </ul>
+    </nav>
+  </aside>
+  <main id="main" tabindex="-1" class="view-frame">
+    <section data-screen="dashboard" class="active">
+      <h2>Quick Start</h2>
+      <div class="grid auto-fit cards">
+        <article class="card">
+          <h3>Generate Table Topics</h3>
+          <p>Need prompts fast? Pull a fresh randomized set.</p>
+          <button class="primary" data-action="generate-topics">Generate</button>
+        </article>
+        <article class="card">
+          <h3>Pick Word of the Day</h3>
+          <p>Elevate vocabulary with a concise definition and usage.</p>
+          <button class="primary" data-action="generate-wod">Draw Word</button>
+        </article>
+        <article class="card">
+          <h3>Select Theme</h3>
+          <p>Set the tone of the meeting with a compelling theme.</p>
+          <button class="primary" data-action="generate-theme">Suggest Theme</button>
+        </article>
+        <article class="card">
+          <h3>Open Timer</h3>
+          <p>Visual multi-phase speech timer with color cues.</p>
+          <button class="primary" data-view="timer">Launch Timer</button>
+        </article>
+      </div>
+      <div class="stack gap-lg" id="quickResults" aria-live="polite"></div>
+    </section>
+
+  <section data-screen="roles">
+      <h2>Meeting Roles</h2>
+  <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <div class="role-grid" id="roleGrid"></div>
+    </section>
+
+  <section data-screen="topics" id="topics">
+      <h2>Table Topics Generator</h2>
+  <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <p class="muted">Randomized prompts. Click generate for a new batch or reveal one at a time.</p>
+      <div class="controls">
+        <button class="primary" data-action="generate-topics">Generate 8</button>
+        <button data-action="clear-topics">Clear</button>
+        <button data-action="reveal-next" disabled>Reveal Next</button>
+      </div>
+      <ol id="topicsList" class="topics-list" aria-live="polite"></ol>
+    </section>
+
+    <section data-screen="wod">
+      <h2>Word of the Day</h2>
+  <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <div id="wodCard" class="wod-card"></div>
+      <div class="controls">
+        <button class="primary" data-action="generate-wod">New Word</button>
+        <button data-action="speak-wod" disabled>🔊 Pronounce</button>
+      </div>
+    </section>
+
+    <section data-screen="themes">
+      <h2>Meeting Themes</h2>
+  <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <p class="muted">Spark engagement with fresh theme ideas.</p>
+      <div id="themeCard" class="theme-card"></div>
+      <div class="controls">
+        <button class="primary" data-action="generate-theme">New Theme</button>
+      </div>
+    </section>
+
+  <section data-screen="timer" id="timer">
+      <h2>Speech Timer</h2>
+  <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <form id="timerForm" class="timer-form" autocomplete="off">
+        <label>Speech Type
+          <select name="preset" id="preset">
+            <option value="custom">Custom</option>
+            <option value="icebreaker" data-green="4" data-yellow="5" data-red="6">Ice Breaker (4–6)</option>
+            <option value="speech5to7" data-green="5" data-yellow="6" data-red="7" selected>Standard (5–7)</option>
+            <option value="evaluation" data-green="2" data-yellow="2.5" data-red="3">Evaluation (2–3)</option>
+            <option value="tabletopics" data-green="1" data-yellow="1.5" data-red="2">Table Topic (1–2)</option>
+          </select>
+        </label>
+        <div class="time-fields" data-custom-hidden>
+          <label>Green <input type="number" step="0.5" min="0.5" name="green" value="5" /></label>
+          <label>Yellow <input type="number" step="0.5" min="0.5" name="yellow" value="6" /></label>
+          <label>Red <input type="number" step="0.5" min="0.5" name="red" value="7" /></label>
+        </div>
+        <div class="timer-controls">
+          <button type="button" class="primary" data-action="start-timer">Start</button>
+          <button type="button" data-action="pause-timer" disabled>Pause</button>
+          <button type="button" data-action="reset-timer" disabled>Reset</button>
+        </div>
+      </form>
+      <div id="timerDisplay" class="timer-display" role="timer" aria-live="assertive">00:00</div>
+    </section>
+
+    <section data-screen="resources" id="resourceSection">
+      <h2>
+  <button type="button" class="nav-link resource-toggle" data-action="toggle-resources" aria-expanded="true">Resources</button>
+      </h2>
+  <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <ul id="resourceList" class="resource-list"></ul>
+    </section>
+
+    <section data-screen="clubs" id="clubsSection">
+      <h2>Clubs Data Explorer</h2>
+      <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <p class="muted">Search and filter District 106 club dataset (FY26). Data loaded lazily from CSV.</p>
+      <form id="clubFilters" class="club-filters" autocomplete="off" role="search" aria-label="Club filters">
+        <label>Search
+          <input type="text" id="clubSearch" placeholder="Name, City, Area, Day..." />
+        </label>
+        <label>Day
+          <select id="clubDayFilter">
+            <option value="">All</option>
+            <option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option><option>Sun</option>
+          </select>
+        </label>
+        <label>Frequency
+          <select id="clubFreqFilter">
+            <option value="">All</option>
+            <option value="W1">Weekly</option>
+            <option value="M1">Monthly</option>
+            <option value="M2">Bi-Monthly</option>
+            <option value="M3">Tri-Monthly</option>
+          </select>
+        </label>
+        <label>Min Members
+          <input type="number" id="clubMinMembers" min="0" placeholder="0" />
+        </label>
+        <label>Goals ≥
+          <input type="number" id="clubMinGoals" min="0" placeholder="0" />
+        </label>
+        <button type="button" data-action="reset-club-filters">Reset</button>
+      </form>
+      <div id="clubsStatus" class="clubs-status" aria-live="polite">Idle.</div>
+      <div class="clubs-table-wrap">
+        <table id="clubsTable" class="clubs-table" aria-describedby="clubsStatus">
+          <thead>
+            <tr>
+              <th scope="col">Area</th>
+              <th scope="col">Club #</th>
+              <th scope="col">Name</th>
+              <th scope="col">City</th>
+              <th scope="col" title="Member Base">Members</th>
+              <th scope="col" title="Educational / DCP Goals">Goals</th>
+              <th scope="col">Day</th>
+              <th scope="col">Time</th>
+              <th scope="col">Years</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section data-screen="about">
+      <h2>About This App</h2>
+  <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <p>This open-source companion accelerates meeting preparation, supports on-the-fly facilitation, and showcases how we can modernize club tools.</p>
+      <p>Planned enhancements: offline support (PWA), personalization, cloud sync, advanced analytics, AI-assisted speech feedback.</p>
+      <p><strong>Not affiliated</strong> with Toastmasters International; for educational/demonstration use.</p>
+      <hr />
+      <h3>Privacy & Minimal Analytics</h3>
+      <p>Analytics are <strong>opt-in</strong>. When enabled, only anonymous aggregate counts (screen views & feature usage) are stored locally on your device. Nothing is sent to a server.</p>
+      <div class="controls analytics-controls">
+        <label class="analytics-toggle-label">
+          <input type="checkbox" id="analyticsToggle" /> Enable anonymous local analytics
+        </label>
+        <button data-action="export-analytics" disabled>Export JSON</button>
+        <button data-action="reset-analytics" disabled>Reset Data</button>
+      </div>
+  <details id="analyticsPanel">
+        <summary>View Collected Metrics</summary>
+  <pre id="analyticsData">(none)</pre>
+      </details>
+    </section>
+
+    <section data-screen="why" id="whySection">
+      <h2>Why Toastmasters?</h2>
+      <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <p class="muted">Key benefits adapted from the full informational page.</p>
+      <div class="benefits-grid" id="benefitsGrid" aria-label="Program benefits">
+        <article class="benefit-card">
+          <span class="benefit-badge" aria-hidden="true">1</span>
+          <h3>What is Toastmasters?</h3>
+          <p>A global nonprofit learning lab for communication and leadership, active in 100+ countries.</p>
+          <details><summary>More</summary><p>Clubs meet regularly and provide structure for prepared speeches, impromptu speaking, feedback and growth.</p></details>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-badge" aria-hidden="true">2</span>
+          <h3>Grow Speaking Confidence</h3>
+          <p>Speak at nearly every meeting—progress replaces perfection.</p>
+          <details><summary>How it works</summary><p>Short roles and Table Topics build quick wins; evaluations offer targeted, kind suggestions to improve next time.</p></details>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-badge" aria-hidden="true">3</span>
+          <h3>Inside a Meeting</h3>
+          <p>Agenda driven: introductions, speeches, impromptu responses, feedback, leadership roles.</p>
+          <details><summary>Structure</summary><p>Rotating roles (Timer, Evaluator, Toastmaster) let everyone practice communication and facilitation.</p></details>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-badge" aria-hidden="true">4</span>
+          <h3>Leadership Pathways</h3>
+          <p>Volunteer officer roles give real-life practice leading teams & projects.</p>
+          <details><summary>Examples</summary><p>Serve as Club President, VP Education, or mentor a new member—each maps to planning, delegation and coaching.</p></details>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-badge" aria-hidden="true">5</span>
+          <h3>Flexible Learning</h3>
+          <p>Self‑paced online curriculum (Pathways) plus immediate application.</p>
+          <details><summary>Why it sticks</summary><p>Repetition, feedback and incremental challenges turn new behaviors into habits.</p></details>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-badge" aria-hidden="true">6</span>
+          <h3>Supportive Network</h3>
+          <p>Diverse peers become collaborators, mentors and encouragers.</p>
+          <details><summary>Community impact</summary><p>You learn by watching others grow, giving feedback, and celebrating wins—motivation compounds.</p></details>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-badge" aria-hidden="true">7</span>
+          <h3>High Value, Low Cost</h3>
+          <p>Far less than typical workshops; value grows each meeting you attend.</p>
+          <details><summary>Cost breakdown</summary><p>Low dues + reusable curriculum + unlimited speaking reps = strong return on time & money.</p></details>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-badge" aria-hidden="true">8</span>
+          <h3>Getting Started</h3>
+          <p>Visit free as a guest. Join when ready to commit to growth.</p>
+          <details><summary>First steps</summary><p>Observe roles, introduce yourself, take a small role next visit, begin your first Pathways project.</p></details>
+        </article>
+      </div>
+      <div class="benefit-cta">
+        <h3>Visit a Club</h3>
+        <p>Experience a meeting and see the impact first-hand. Guests are always welcome.</p>
+        <p><a class="primary" href="https://www.toastmasters.org/find-a-club" target="_blank" rel="noopener">Find a Club Near You</a></p>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Floating back button (mobile) -->
+  <button id="fabBack" class="fab-back" data-action="go-dashboard" aria-label="Back to Dashboard" hidden>←</button>
+
+  <template id="roleTemplate">
+    <article class="role-card">
+      <header>
+        <h3 class="role-name"></h3>
+        <span class="tag level"></span>
+      </header>
+      <p class="role-summary"></p>
+      <details>
+        <summary>Details</summary>
+        <div class="role-details"></div>
+      </details>
+    </article>
+  </template>
+
+  <script type="module" src="data.js"></script>
+  <script type="module" src="app.js"></script>
+  <script>
+    // Register service worker (progressive enhancement)
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(console.error));
+    }
+  </script>
+</body>
+</html>

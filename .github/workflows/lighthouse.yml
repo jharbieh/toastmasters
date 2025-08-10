@@ -1,0 +1,59 @@
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli serve
+      - name: Build (static site)
+        run: |
+          echo 'Static site - no build step'
+      - name: Run Lighthouse CI
+        run: |
+          mkdir -p dist
+          cp -r webapp dist/
+          npx serve dist -l 4173 &
+          npx wait-on http://localhost:4173/webapp/index.html
+          lhci autorun --collect.url=http://localhost:4173/webapp/index.html --upload.target=filesystem --upload.outputDir=./lhci
+      - name: Upload LHCI results artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lhci-report
+          path: lhci
+      - name: Extract scores
+        id: scores
+        run: |
+          SCORE_FILE=$(ls lhci/*lhr.json | head -n1)
+          echo "Found $SCORE_FILE"
+          PERF=$(jq '.categories.performance.score * 100' $SCORE_FILE)
+          ACC=$(jq '.categories.accessibility.score * 100' $SCORE_FILE)
+            BEST=$(jq '.categories["best-practices"].score * 100' $SCORE_FILE)
+          SEO=$(jq '.categories.seo.score * 100' $SCORE_FILE)
+          PWA=$(jq '.categories.pwa.score * 100' $SCORE_FILE)
+          echo "perf=$PERF" >> $GITHUB_OUTPUT
+          echo "accessibility=$ACC" >> $GITHUB_OUTPUT
+          echo "best=$BEST" >> $GITHUB_OUTPUT
+          echo "seo=$SEO" >> $GITHUB_OUTPUT
+          echo "pwa=$PWA" >> $GITHUB_OUTPUT
+      - name: Create Shields badge JSON
+        run: |
+          mkdir -p badges
+          printf '{"schemaVersion":1,"label":"Lighthouse","message":"P% s A% s B% s S% s PWA% s","color":"brightgreen"}' "${{ steps.scores.outputs.perf }}" "${{ steps.scores.outputs.accessibility }}" "${{ steps.scores.outputs.best }}" "${{ steps.scores.outputs.seo }}" "${{ steps.scores.outputs.pwa }}" | tr -d ' ' > badges/lighthouse.json
+      - name: Upload badge artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: lighthouse-badge
+            path: badges/lighthouse.json

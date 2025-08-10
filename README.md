@@ -1,34 +1,153 @@
-# Toastmasters Project
+# Toastmasters Tools & Companion Web App
 
-This repository contains tools and resources for Toastmasters clubs, including scripts for generating banners, working with club data, and a Word of the Day (WOD) utility.
+This repository combines lightweight utilities (banner generation, CSV data) and a modern, installable, offline‑capable web application that supports running or preparing Toastmasters meetings.
+
+![Lighthouse](badges/lighthouse.json)
 
 ## Table of Contents
-- [Project Structure](#project-structure)
-- [Setup](#setup)
-- [Usage](#usage)
+- [Repository Structure](#repository-structure)
+- [Companion Web App](#companion-web-app)
+	- [Feature Summary](#feature-summary)
+	- [Why Toastmasters Content](#why-toastmasters-content)
+	- [Clubs Data Explorer](#clubs-data-explorer)
+	- [Resources Directory](#resources-directory)
+	- [Privacy & Local Analytics](#privacy--local-analytics)
+	- [Error Monitoring](#error-monitoring)
+	- [Offline & PWA Details](#offline--pwa-details)
+	- [Keyboard & Accessibility](#keyboard--accessibility)
+	- [Running Locally](#running-locally)
+	- [Development Notes](#development-notes)
+- [Data Files](#data-files)
+- [Extending](#extending)
 - [Contributing](#contributing)
 
-## Project Structure
+## Repository Structure
 
 ```
-src/        # Python scripts and modules
-data/       # CSV and data files
-pptx/       # PowerPoint files
-docs/       # Documentation
+webapp/              # SPA (index.html, app.js, app.css, manifest, service worker, icons)
+data/                # CSV data (resources.csv, d106_fy26.csv, etc.)
+public/              # Stand‑alone informational page (why-toastmasters.html)
+banner.py            # Banner generation / image related script (legacy utility)
+banner_csv.py        # CSV helper for banners
+csv_reader.py        # CSV tooling
+wod.py               # Word of the Day helper (legacy script version)
+README.md            # This file
+...other assets (pptx, quotes.csv, etc.)
 ```
 
-## Setup
-1. Clone the repository.
-2. Install dependencies:
-	```
-	pip install -r requirements.txt
-	```
-3. Copy `.env.example` to `.env` and fill in your API keys and URLs.
+> Note: Some earlier Python tooling may not require extra packages; no build step is needed for the web app.
 
-## Usage
-- Run scripts from the `src/` directory for various utilities (see script docstrings for details).
-- Data files are in `data/` and PowerPoint templates/outputs in `pptx/`.
+## Companion Web App
+A single‑page, vanilla JS progressive web app: `webapp/index.html`.
 
+### Feature Summary
+Current implemented features (all mobile friendly, dark/light aware):
+- Dashboard quick actions
+- Meeting Roles reference (expandable details)
+- Table Topics generator (randomized, reveal one at a time)
+- Word of the Day picker + optional speech synthesis
+- Theme suggester
+- Speech Timer with presets (Ice Breaker, Standard, Evaluation, Table Topic) + custom times
+- Persisted state (topics progress, word, theme, timer values, theme preference, resources collapsed state)
+- Collapsible Resources list (full set auto‑imported from `data/resources.csv`)
+- Auto‑open target section when user first uses a generator action
+- Floating mobile back button + per‑section back buttons
+- Local toast notifications for feedback & offline/online changes
+- Privacy‑respecting local analytics (opt‑in) tracking only screen/event counts & (now) error counts
+- Global error & unhandled promise rejection monitoring (counts only when analytics is enabled)
+- Clubs Data Explorer (filter/search dataset from `data/d106_fy26.csv`)
+- Integrated “Why Toastmasters” benefits section (adapted from standalone HTML page)
+- Deep linking via hash (#topics, #timer, #clubs, #why, etc.)
+- Reduced motion support
+
+### Why Toastmasters Content
+The original rich informational page (`public/why-toastmasters.html`) has been summarized into an in‑app section ("Why Toastmasters") providing benefit cards + CTA link to official club finder.
+
+### Clubs Data Explorer
+Purpose: Explore District 106 club dataset provided by `data/d106_fy26.csv`.
+
+Capabilities:
+- Lazy CSV load on first visit (network only once; may be cached by the SW if added to core assets later)
+- Client‑side parsing (handles quoted commas)
+- Multi‑criteria filtering: free text (matches name, city, area, day, frequency), meeting day, meeting frequency, min members, minimum goals
+- Debounced input (200 ms) for responsiveness
+- Sorts by Area then Club name
+- Displays match count and caps display to 500 rows (adjust easily if needed)
+
+### Resources Directory
+All entries from `data/resources.csv` are surfaced in the Resources section (collapsible). The list is lazy‑rendered on first open.
+
+### Privacy & Local Analytics
+- Fully opt‑in toggle (default disabled)
+- Data stored only in `localStorage` under `tm-analytics`
+- Captures screen view counts, feature events (e.g., generate-topics), and error keys
+- Export & reset buttons (exports JSON blob, resets while preserving opt‑in flag)
+
+### Error Monitoring
+Global `error` & `unhandledrejection` listeners record aggregated counts (message fingerprint) when analytics is enabled—useful for catching regressions without external tracking.
+
+### Offline & PWA Details
+- `manifest.webmanifest` with multi‑size PNG + maskable SVG icons and shortcuts
+- `sw.js` (v2) caches core shell assets; strategy:
+	- Navigation: network‑first, fallback to cache then offline page
+	- Static assets (css/js/svg/png/webmanifest): stale‑while‑revalidate
+	- Others: cache‑first with network fill
+- `offline.html` provides graceful messaging when offline navigation misses
+- `window.__tmAppReady` flag can help differentiate real offline fallback vs loading delay
+
+### Keyboard & Accessibility
+- Focus visible outlines respecting reduced motion
+- ARIA live regions for dynamic lists (topics, analytics data)
+- Hash navigation updates location for deep linkable sections
+- Button accessible names & `aria-expanded` states (collapsible resources)
+- Table headers sticky for data explorer; search form labelled role=search
+
+### Running Locally
+The app is static—just serve the `webapp/` directory (recommended) or open `webapp/index.html` directly (service worker requires http/https for full PWA behavior).
+
+Using Python (already in prior attempts):
+```powershell
+# From repository root
+python -m http.server 5173
+# Visit http://localhost:5173/webapp/
+```
+
+Alternative quick servers:
+```powershell
+npx serve webapp
+# or
+pwsh -NoProfile -Command "php -S localhost:5173 -t webapp"
+```
+
+No build or dependency install is required for the web app (vanilla ES modules). Just ensure files are served from a consistent origin so the service worker can register.
+
+### Development Notes
+- Avoid adding heavy frameworks to keep Lighthouse scores high
+- Lazy rendering (roles/resources) & lazy data loading (clubs) minimize initial payload
+- Add new sections by appending a `<section data-screen="newname">` and linking with a `[data-view="newname"]` button in the sidebar
+- Analytics storage key: `tm-analytics`; state key: `tm-state`
+
+## Data Files
+- `data/resources.csv` – curated list of links rendered in Resources section
+- `data/d106_fy26.csv` – District 106 club dataset powering the Clubs Data Explorer
+- `quotes.csv`, `wod.csv`, etc. – additional datasets (not all currently surfaced in UI)
+
+## Extending
+Ideas / low‑risk enhancements:
+- Add column sorting (by members, goals) in the Clubs Data Explorer (delegate click on `<th>`)
+- Provide CSV / JSON export of current filtered club subset
+- Integrate a Table Topics pack selector (themes / difficulty)
+- Add a roles agenda PDF export using client‑side print CSS
+- Add optional caching of the clubs CSV in `CORE_ASSETS` if offline browsing is important
+- Toggle to expand/collapse all benefit cards (Why section)
+
+## Contributing
+1. Keep the web app zero‑build (plain ES modules) unless absolutely necessary.
+2. Optimize for accessibility, performance, and privacy.
+3. When adding data fetches, wrap in try/catch + offline handling.
+4. Document new features here and update PWA cache version if core asset set changes.
+
+---
 
 ## Resources
 Here are useful links for Toastmasters, as listed in `data/resources.csv`:
