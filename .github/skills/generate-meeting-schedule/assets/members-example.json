@@ -1,0 +1,60 @@
+{
+  "start_date": "2025-01-05",
+  "members": [
+    { "name": "Alice Chen",    "goal": "public_speaker", "pathway": "Confident Voice" },
+    { "name": "Bob Harrington","goal": "leader",         "pathway": "Dynamic Leadership" },
+    { "name": "Carol Singh",   "goal": "communicator",   "pathway": "Innovative Planning" },
+    { "name": "David Kim",     "goal": "public_speaker", "pathway": "Presentation Mastery" },
+    { "name": "Elena Torres",  "goal": "leader",         "pathway": "Strategic Relationships" },
+    { "name": "Frank Okafor",  "goal": "balanced",       "pathway": "Engaging Humor" },
+    { "name": "Grace Liu",     "goal": "communicator",   "pathway": "Innovative Planning" },
+    { "name": "Henry Patel",   "goal": "public_speaker", "pathway": "Confident Voice" },
+    { "name": "Isabel Matos",  "goal": "balanced",       "pathway": "Dynamic Leadership" }
+  ],
+  "weights": {
+    "public_speaker": {
+      "Speaker": 35,
+      "Toastmaster": 20,
+      "Table Topics Master": 15,
+      "Evaluator": 10,
+      "General Evaluator": 5,
+      "Grammarian": 5,
+      "Word of the Day Master": 5,
+      "Timer": 3,
+      "Ah Counter": 2
+    },
+    "leader": {
+      "Toastmaster": 30,
+      "General Evaluator": 25,
+      "Table Topics Master": 20,
+      "Evaluator": 15,
+      "Speaker": 5,
+      "Grammarian": 3,
+      "Word of the Day Master": 1,
+      "Timer": 1,
+      "Ah Counter": 0
+    },
+    "communicator": {
+      "Speaker": 25,
+      "Evaluator": 20,
+      "Table Topics Master": 15,
+      "Toastmaster": 12,
+      "Grammarian": 10,
+      "Word of the Day Master": 8,
+      "General Evaluator": 5,
+      "Timer": 3,
+      "Ah Counter": 2
+    },
+    "balanced": {
+      "Speaker": 15,
+      "Toastmaster": 14,
+      "Table Topics Master": 12,
+      "General Evaluator": 12,
+      "Evaluator": 12,
+      "Grammarian": 9,
+      "Word of the Day Master": 9,
+      "Timer": 9,
+      "Ah Counter": 8
+    }
+  }
+}
