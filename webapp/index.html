@@ -36,6 +36,7 @@
     <nav>
       <ul>
         <li><button data-view="dashboard" class="nav-link" aria-current="page">Dashboard</button></li>
+        <li><button data-action="open-scheduler" class="nav-link">Schedule Builder</button></li>
         <li><button data-view="roles" class="nav-link">Meeting Roles</button></li>
         <li><button data-view="topics" class="nav-link">Table Topics</button></li>
         <li><button data-view="wod" class="nav-link">Word of the Day</button></li>
@@ -52,6 +53,11 @@
     <section data-screen="dashboard" class="active">
       <h2>Quick Start</h2>
       <div class="grid auto-fit cards">
+        <article class="card">
+          <h3>Build Meeting Schedule</h3>
+          <p>Create a 52-week role rotation and download the CSV for club use.</p>
+          <button class="primary" data-action="open-scheduler">Open Scheduler</button>
+        </article>
         <article class="card">
           <h3>Generate Table Topics</h3>
           <p>Need prompts fast? Pull a fresh randomized set.</p>

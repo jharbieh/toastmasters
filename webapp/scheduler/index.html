@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Toastmasters Schedule Builder</title>
+  <meta name="description" content="Build a 52-week Toastmasters meeting role schedule and download it as CSV." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <main class="scheduler-page">
+    <section class="hero panel">
+      <div class="hero-copy">
+        <a class="back-link" href="../index.html">← Back to Companion</a>
+        <p class="eyebrow">Scheduler</p>
+        <h1>Build a club-ready role rotation in minutes.</h1>
+        <p class="hero-text">Capture member goals, choose a start date, and generate a 52-week schedule using the same weighted assignment engine used by the CLI generator.</p>
+      </div>
+      <div class="hero-stats" aria-label="Scheduler overview">
+        <article>
+          <strong>52</strong>
+          <span>weeks per plan</span>
+        </article>
+        <article>
+          <strong>9</strong>
+          <span>meeting roles balanced</span>
+        </article>
+        <article>
+          <strong>CSV</strong>
+          <span>download-ready output</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="workspace-grid">
+      <section class="panel form-panel" aria-labelledby="setupHeading">
+        <div class="section-heading">
+          <p class="eyebrow">Setup</p>
+          <h2 id="setupHeading">Club Details</h2>
+        </div>
+        <form id="schedulerForm" class="stack" autocomplete="off">
+          <div class="field-grid field-grid-top">
+            <label>
+              Club name
+              <input type="text" id="clubName" name="clubName" placeholder="Star Wars Advanced Speakers" />
+            </label>
+            <label>
+              First meeting date
+              <input type="date" id="startDate" name="startDate" required />
+            </label>
+            <label>
+              Optimization profile
+              <select id="profile" name="profile">
+                <option value="">Standard</option>
+                <option value="scale">Scale-balanced</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="count-bar">
+            <label>
+              Total member count
+              <input type="number" id="memberCount" name="memberCount" min="1" max="80" required />
+            </label>
+            <button type="button" class="secondary" id="applyCount">Build roster</button>
+            <button type="button" class="secondary" id="addMember">Add member</button>
+            <button type="button" class="ghost" id="loadSample">Load sample club</button>
+            <button type="button" class="ghost" id="resetForm">Reset</button>
+          </div>
+
+          <div class="goal-help" aria-label="Goal options">
+            <span><strong>Public Speaking</strong> prioritizes speaker-heavy rotations.</span>
+            <span><strong>Leadership</strong> leans toward facilitation and evaluation roles.</span>
+            <span><strong>Both</strong> keeps the distribution more even.</span>
+          </div>
+
+          <div class="member-roster-header">
+            <div>
+              <p class="eyebrow">Roster</p>
+              <h3>Members</h3>
+            </div>
+            <p id="rosterMeta" class="muted" aria-live="polite"></p>
+          </div>
+
+          <div id="memberRoster" class="member-roster"></div>
+
+          <div id="formStatus" class="status" aria-live="polite">Enter your roster details, then generate a schedule.</div>
+
+          <div class="actions-row">
+            <button type="submit" class="primary">Generate schedule</button>
+            <button type="button" class="secondary" id="downloadConfig" disabled>Download config JSON</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel results-panel" aria-labelledby="resultsHeading">
+        <div class="section-heading">
+          <p class="eyebrow">Output</p>
+          <h2 id="resultsHeading">Schedule Preview</h2>
+        </div>
+        <div id="emptyState" class="empty-state">
+          <h3>No schedule generated yet</h3>
+          <p>Your 52-week preview, balance summary, and CSV download will appear here.</p>
+        </div>
+
+        <div id="resultsContent" hidden>
+          <div class="result-cards" id="resultCards"></div>
+          <div class="download-row">
+            <button type="button" class="primary" id="downloadCsv">Download CSV</button>
+            <button type="button" class="secondary" id="copyJson">Copy config JSON</button>
+          </div>
+
+          <section class="summary-block" aria-labelledby="memberSummaryHeading">
+            <div class="summary-head">
+              <h3 id="memberSummaryHeading">Member Balance Snapshot</h3>
+              <p class="muted">Focus roles show actual assignments versus target counts.</p>
+            </div>
+            <div id="memberSummary" class="member-summary"></div>
+          </section>
+
+          <section class="summary-block" aria-labelledby="tableHeading">
+            <div class="summary-head">
+              <h3 id="tableHeading">52-Week Schedule</h3>
+              <p class="muted">Scroll horizontally on smaller screens.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="schedule-table" id="scheduleTable">
+                <thead>
+                  <tr>
+                    <th scope="col">Week</th>
+                    <th scope="col">Date</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <template id="memberRowTemplate">
+    <article class="member-card">
+      <div class="member-index"></div>
+      <div class="member-grid">
+        <label>
+          Member name
+          <input type="text" name="memberName" placeholder="Member name" required />
+        </label>
+        <label>
+          Primary goal
+          <select name="memberGoal">
+            <option value="public_speaker">Public Speaking</option>
+            <option value="leader">Leadership</option>
+            <option value="balanced">Both</option>
+          </select>
+        </label>
+        <label>
+          Pathways track
+          <input type="text" name="memberPathway" placeholder="Optional" />
+        </label>
+      </div>
+      <button type="button" class="remove-member" data-action="remove-member">Remove</button>
+    </article>
+  </template>
+
+  <script src="scheduler-core.js"></script>
+  <script defer src="app.js"></script>
+</body>
+</html>

@@ -8,6 +8,7 @@ This repository combines lightweight utilities (banner generation, CSV data) and
 - [Repository Structure](#repository-structure)
 - [Companion Web App](#companion-web-app)
 	- [Feature Summary](#feature-summary)
+	- [Schedule Builder](#schedule-builder)
 	- [Why Toastmasters Content](#why-toastmasters-content)
 	- [Clubs Data Explorer](#clubs-data-explorer)
 	- [Resources Directory](#resources-directory)
@@ -43,6 +44,7 @@ A single‑page, vanilla JS progressive web app: `webapp/index.html`.
 ### Feature Summary
 Current implemented features (all mobile friendly, dark/light aware):
 - Dashboard quick actions
+- Schedule Builder sub-app at `webapp/scheduler/` for 52-week meeting role generation and CSV download
 - Meeting Roles reference (expandable details)
 - Table Topics generator (randomized, reveal one at a time)
 - Word of the Day picker + optional speech synthesis
@@ -59,6 +61,21 @@ Current implemented features (all mobile friendly, dark/light aware):
 - Integrated “Why Toastmasters” benefits section (adapted from standalone HTML page)
 - Deep linking via hash (#topics, #timer, #clubs, #why, etc.)
 - Reduced motion support
+
+### Schedule Builder
+The repository now includes a dedicated scheduler sub-app at `webapp/scheduler/index.html`, available at `/scheduler/` when the `webapp/` folder is served as the site root.
+
+What it does:
+- Collects a club name, meeting start date, optimization profile, and total member count
+- Generates editable roster rows for each member with name, primary goal, and optional Pathways track
+- Maps goal choices to the existing weighted scheduler engine:
+	- `Public Speaking` -> `public_speaker`
+	- `Leadership` -> `leader`
+	- `Both` -> `balanced`
+- Runs the same weighted assignment algorithm used by `.github/skills/generate-meeting-schedule/scripts/generate-schedule.js`
+- Shows a 52-week preview, summary cards, member balance snapshot, and download actions for CSV / JSON config
+
+This sub-app is fully client-side and does not require a backend.
 
 ### Why Toastmasters Content
 The original rich informational page (`public/why-toastmasters.html`) has been summarized into an in‑app section ("Why Toastmasters") providing benefit cards + CTA link to official club finder.
@@ -110,6 +127,7 @@ Using Python (already in prior attempts):
 # From repository root
 python -m http.server 5173
 # Visit http://localhost:5173/webapp/
+# Scheduler route: http://localhost:5173/webapp/scheduler/
 ```
 
 Alternative quick servers:
@@ -134,6 +152,10 @@ No build or dependency install is required for the web app (vanilla ES modules).
 
 ## Extending
 Ideas / low‑risk enhancements:
+- Add CSV upload to prefill the scheduler roster from an existing club export
+- Let admins tune role weights per goal from the scheduler UI before generation
+- Add printable agenda and email-friendly exports from the generated schedule
+- Add saved schedule history and browser-side version compare for roster changes
 - Add column sorting (by members, goals) in the Clubs Data Explorer (delegate click on `<th>`)
 - Provide CSV / JSON export of current filtered club subset
 - Integrate a Table Topics pack selector (themes / difficulty)

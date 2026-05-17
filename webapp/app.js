@@ -272,6 +272,7 @@ function attachActions(){
     const action = e.target.getAttribute('data-action');
     if(!action) return;
     switch(action){
+      case 'open-scheduler': window.location.href = 'scheduler/index.html'; break;
       case 'generate-topics': generateTopics(); break;
       case 'reveal-next': revealNext(); break;
       case 'clear-topics': clearTopics(); break;

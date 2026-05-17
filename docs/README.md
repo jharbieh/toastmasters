@@ -61,3 +61,51 @@ Primary scheduler artifacts from this work:
 - Active member config: `data/members.json`
 - Scale profile test config: `data/members_profile_scale_test.json`
 - Latest scale schedule output: `schedule/starwars_15_schedule_profile_scale.csv`
+
+## Scheduler Web App
+
+The repository now includes a dedicated browser-based scheduler at `webapp/scheduler/index.html`.
+
+When served from the `webapp/` folder as site root, it is available at `/scheduler/`.
+
+### Supported admin workflow
+
+1. Enter the club name.
+2. Select the first meeting date.
+3. Choose an optimization profile:
+	- `Standard`: uses the default weighting behavior.
+	- `Scale-balanced`: applies the tuned scale profile for larger or more mixed rosters.
+4. Enter the total member count.
+5. Fill in each member row with:
+	- Name
+	- Primary goal: `Public Speaking`, `Leadership`, or `Both`
+	- Optional Pathways track
+6. Generate the schedule.
+7. Review the preview and download:
+	- Schedule CSV
+	- Source JSON config
+
+### Goal mapping used by the UI
+
+- `Public Speaking` -> `public_speaker`
+- `Leadership` -> `leader`
+- `Both` -> `balanced`
+
+### Notes on implementation
+
+- The `/scheduler/` app is fully client-side.
+- It reuses the same scheduling logic as the CLI generator through `webapp/scheduler/scheduler-core.js`.
+- The main companion app links to the builder from the dashboard and primary navigation.
+- The service worker pre-caches the scheduler shell so the route behaves like a first-class part of the web app.
+
+### Roadmap
+
+- Add roster import from CSV or prior JSON config.
+- Add editable per-goal weight tuning in the browser UI.
+- Add a conflict/availability layer for members who cannot serve on certain weeks.
+- Add a printable meeting packet view derived from the generated schedule.
+- Add saved scheduler sessions and comparison against prior roster versions.
+- Add a lightweight validation summary for over- or under-assigned support roles before download.
+- Add export formats beyond CSV, such as printable HTML and PDF.
+- Add a shareable link or encoded config so an admin can reopen a draft roster later.
+- Add member notes or preferences, such as role exclusions or preferred speaking slots.

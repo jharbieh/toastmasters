@@ -17,6 +17,7 @@
     { "src": "logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
   "shortcuts": [
+    { "name": "Scheduler", "url": "./scheduler/index.html", "description": "Open the meeting schedule builder" },
     { "name": "Topics", "url": "./index.html#topics", "description": "Jump to Table Topics generator" },
     { "name": "Timer", "url": "./index.html#timer", "description": "Open speech timer" }
   ]
