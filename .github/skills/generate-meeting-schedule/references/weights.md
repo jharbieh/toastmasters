@@ -84,6 +84,21 @@ When the user wants to customize weights, enforce these rules:
 3. No single role should exceed 50% (to ensure broad development)
 4. Roles with weight 0 will never be assigned to that member
 
+## Scale-Aware Weight Guidance (Mixed Goal Rosters)
+
+For larger rosters (roughly 12+ members) with mixed goals, support-role warnings can spike if aggregate support-role demand is too low.
+
+Use these patterns to improve fit while preserving goal intent:
+1. Keep each support role (`Timer`, `Ah Counter`, `Word of the Day Master`) at a non-trivial value for every active goal profile.
+2. Prefer small reductions across multiple high-demand roles over a large cut to a single role.
+3. For scale-focused runs, target approximately 6-10% per support role for most profiles, then validate and iterate.
+
+Example scale-aware profiles used successfully in this repo:
+- `public_speaker`: Speaker 24, Toastmaster 16, Table Topics Master 12, Evaluator 10, General Evaluator 7, Grammarian 9, Word of the Day Master 8, Timer 7, Ah Counter 7
+- `leader`: Toastmaster 20, General Evaluator 18, Table Topics Master 15, Evaluator 13, Speaker 8, Grammarian 8, Word of the Day Master 6, Timer 6, Ah Counter 6
+- `communicator`: Speaker 18, Evaluator 16, Table Topics Master 12, Toastmaster 10, Grammarian 12, Word of the Day Master 10, General Evaluator 8, Timer 7, Ah Counter 7
+- `balanced`: Speaker 14, Toastmaster 13, Table Topics Master 11, General Evaluator 11, Evaluator 11, Grammarian 10, Word of the Day Master 10, Timer 10, Ah Counter 10
+
 ### Example Adjustment Conversation
 
 > **Agent:** For Alice (public_speaker), the default gives Speaker=35% and Timer=3%. Would you like to adjust these?

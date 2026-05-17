@@ -1,0 +1,178 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "generate-starwars-9-schedule",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members.json",
+				"--output",
+				"schedule/starwars_9_schedule.csv"
+			]
+		},
+		{
+			"label": "generate-starwars-9-schedule-refined",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members.json",
+				"--output",
+				"schedule/starwars_9_schedule_refined.csv"
+			]
+		},
+		{
+			"label": "validate-members-json",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"-e",
+				"JSON.parse(require('fs').readFileSync('data/members.json','utf8')); console.log('ok')"
+			]
+		},
+		{
+			"label": "validate-members-json-2",
+			"type": "shell",
+			"command": "node -e \"JSON.parse(require('fs').readFileSync('data/members.json','utf8')); console.log('ok')\""
+		},
+		{
+			"label": "generate-starwars-9-schedule-refined",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members.json",
+				"--output",
+				"schedule/starwars_9_schedule_refined.csv"
+			]
+		},
+		{
+			"label": "generate-starwars-15-schedule-smoketest",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members_scale_test.json",
+				"--output",
+				"schedule/starwars_15_schedule_smoketest.csv"
+			]
+		},
+		{
+			"label": "generate-starwars-15-schedule-final",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members.json",
+				"--output",
+				"schedule/starwars_15_schedule.csv"
+			]
+		},
+		{
+			"label": "validate-starwars-15-csv-shape",
+			"type": "shell",
+			"command": "pwsh",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$csv = Import-Csv 'schedule/starwars_15_schedule.csv'; $cols = $csv[0].PSObject.Properties.Name; $expected = @('Week','Date','Toastmaster','General Evaluator','Table Topics Master','Grammarian','Timer','Speaker','Evaluator','Ah Counter','Word of the Day Master'); Write-Output ('rows=' + $csv.Count); Write-Output ('colCount=' + $cols.Count); Write-Output ('hasAllExpected=' + (@($expected | Where-Object { $cols -contains $_ }).Count -eq $expected.Count));"
+			]
+		},
+		{
+			"label": "validate-starwars-15-csv-shape",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/validate_schedule_shape.js",
+				"schedule/starwars_15_schedule.csv"
+			]
+		},
+		{
+			"label": "validate-starwars-15-csv-shape-node2",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/validate_schedule_shape.js",
+				"schedule/starwars_15_schedule.csv"
+			]
+		},
+		{
+			"label": "generate-starwars-15-schedule-penalty",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members.json",
+				"--output",
+				"schedule/starwars_15_schedule.csv"
+			]
+		},
+		{
+			"label": "generate-starwars-15-schedule-tuned",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members.json",
+				"--output",
+				"schedule/starwars_15_schedule_tuned.csv"
+			]
+		},
+		{
+			"label": "generate-starwars-15-schedule-quality",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members.json",
+				"--output",
+				"schedule/starwars_15_schedule.csv"
+			]
+		},
+		{
+			"label": "generate-starwars-15-schedule-scaled-weights",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members.json",
+				"--output",
+				"schedule/starwars_15_schedule.csv"
+			]
+		},
+		{
+			"label": "validate-starwars-15-csv-shape-final",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/validate_schedule_shape.js",
+				"schedule/starwars_15_schedule.csv"
+			]
+		},
+		{
+			"label": "generate-starwars-15-profile-scale-test",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".github/skills/generate-meeting-schedule/scripts/generate-schedule.js",
+				"--config",
+				"data/members_profile_scale_test.json",
+				"--profile",
+				"scale",
+				"--output",
+				"schedule/starwars_15_schedule_profile_scale.csv"
+			]
+		}
+	]
+}

@@ -22,6 +22,16 @@ const ROLES = [
   'Word of the Day Master',
 ];
 
+const SUPPORT_ROLES = ['Timer', 'Ah Counter', 'Word of the Day Master'];
+
+// Optimization weights tuned for larger rosters where support roles can cluster.
+const OPTIMIZATION = {
+  roleSurplusPenalty: 30,
+  supportRoleExtraPenalty: 90,
+  supportAggregatePenalty: 25,
+  supportOverTargetMultiplier: 2.5,
+};
+
 const WEEKS = 52;
 
 const DEFAULT_WEIGHTS = {
@@ -47,6 +57,31 @@ const DEFAULT_WEIGHTS = {
   },
 };
 
+const PROFILE_WEIGHTS = {
+  scale: {
+    public_speaker: {
+      Speaker: 24, Toastmaster: 16, 'Table Topics Master': 12,
+      Evaluator: 10, 'General Evaluator': 7, Grammarian: 9,
+      'Word of the Day Master': 8, Timer: 7, 'Ah Counter': 7,
+    },
+    leader: {
+      Toastmaster: 20, 'General Evaluator': 18, 'Table Topics Master': 15,
+      Evaluator: 13, Speaker: 8, Grammarian: 8,
+      'Word of the Day Master': 6, Timer: 6, 'Ah Counter': 6,
+    },
+    communicator: {
+      Speaker: 18, Evaluator: 16, 'Table Topics Master': 12,
+      Toastmaster: 10, Grammarian: 12, 'Word of the Day Master': 10,
+      'General Evaluator': 8, Timer: 7, 'Ah Counter': 7,
+    },
+    balanced: {
+      Speaker: 14, Toastmaster: 13, 'Table Topics Master': 11,
+      'General Evaluator': 11, Evaluator: 11, Grammarian: 10,
+      'Word of the Day Master': 10, Timer: 10, 'Ah Counter': 10,
+    },
+  },
+};
+
 function parseArgs() {
   const args = process.argv.slice(2);
   const opts = { output: 'schedule.csv' };
@@ -54,6 +89,7 @@ function parseArgs() {
     if (args[i] === '--config' && args[i + 1]) opts.config = args[++i];
     else if (args[i] === '--output' && args[i + 1]) opts.output = args[++i];
     else if (args[i] === '--start-date' && args[i + 1]) opts.startDate = args[++i];
+    else if (args[i] === '--profile' && args[i + 1]) opts.profile = args[++i];
   }
   return opts;
 }
@@ -72,9 +108,10 @@ function formatDate(date) {
  * Resolve the weight profile for a member.
  * Priority: member-level weights > config goal-level weights > built-in defaults.
  */
-function resolveWeights(member, configWeights) {
+function resolveWeights(member, configWeights, profileWeights) {
   if (member.weights) return member.weights;
   if (configWeights && configWeights[member.goal]) return configWeights[member.goal];
+  if (profileWeights && profileWeights[member.goal]) return profileWeights[member.goal];
   return DEFAULT_WEIGHTS[member.goal] || DEFAULT_WEIGHTS.balanced;
 }
 
@@ -83,14 +120,14 @@ function resolveWeights(member, configWeights) {
  * respecting the supply constraint: each role has exactly WEEKS slots (one per week).
  * If total member demand for a role exceeds supply, targets are scaled down proportionally.
  */
-function buildTargets(members, configWeights) {
+function buildTargets(members, configWeights, profileWeights) {
   const totalSlots = WEEKS * ROLES.length;
   const perMember = totalSlots / members.length;
   const roleSupply = WEEKS; // one slot per role per week
 
   // Step 1: Compute continuous raw targets per member
   const withRaw = members.map((member) => {
-    const w = resolveWeights(member, configWeights);
+    const w = resolveWeights(member, configWeights, profileWeights);
     const weightSum = ROLES.reduce((s, r) => s + (w[r] || 0), 0) || 100;
     const raw = {};
     for (const role of ROLES) {
@@ -128,11 +165,16 @@ function buildTargets(members, configWeights) {
   });
 }
 
-function generateSchedule(config) {
+function generateSchedule(config, opts = {}) {
   const { members, start_date, weights: configWeights } = config;
+  const profileWeights = opts.profile ? PROFILE_WEIGHTS[opts.profile] : null;
   if (!members || members.length === 0) throw new Error('No members provided in config.');
 
-  const membersWithTargets = buildTargets(members, configWeights);
+  if (opts.profile && !profileWeights) {
+    throw new Error(`Unknown profile: ${opts.profile}. Supported profiles: ${Object.keys(PROFILE_WEIGHTS).join(', ')}`);
+  }
+
+  const membersWithTargets = buildTargets(members, configWeights, profileWeights);
   const startDate = new Date(start_date || new Date().toISOString().split('T')[0]);
 
   // lastWeekAssigned[memberName][role] = week number of last assignment
@@ -166,7 +208,168 @@ function generateSchedule(config) {
     schedule.push(row);
   }
 
-  return { schedule, membersWithTargets };
+  const swapsApplied = secondPassBalance(schedule, membersWithTargets);
+
+  return { schedule, membersWithTargets, swapsApplied };
+}
+
+function createCountsMap(members, schedule) {
+  const counts = {};
+  for (const m of members) {
+    counts[m.name] = {};
+    for (const role of ROLES) counts[m.name][role] = 0;
+  }
+
+  for (const row of schedule) {
+    for (const role of ROLES) {
+      const name = row[role];
+      if (name && counts[name]) counts[name][role] += 1;
+    }
+  }
+
+  return counts;
+}
+
+function absDelta(count, target) {
+  return Math.abs((count || 0) - (target || 0));
+}
+
+function roleDeviationCost(role, count, target) {
+  const base = absDelta(count, target);
+  if (!SUPPORT_ROLES.includes(role)) return base;
+  const over = Math.max(0, (count || 0) - (target || 0));
+  return base + (over * OPTIMIZATION.supportOverTargetMultiplier);
+}
+
+function swapImprovementDelta(row, roleA, roleB, counts, targetsByMember) {
+  const memberA = row[roleA];
+  const memberB = row[roleB];
+  if (!memberA || !memberB || memberA === memberB) return Number.POSITIVE_INFINITY;
+
+  const tA = targetsByMember[memberA] || {};
+  const tB = targetsByMember[memberB] || {};
+
+  const before =
+    roleDeviationCost(roleA, counts[memberA][roleA], tA[roleA]) +
+    roleDeviationCost(roleB, counts[memberA][roleB], tA[roleB]) +
+    roleDeviationCost(roleA, counts[memberB][roleA], tB[roleA]) +
+    roleDeviationCost(roleB, counts[memberB][roleB], tB[roleB]);
+
+  const after =
+    roleDeviationCost(roleA, counts[memberA][roleA] - 1, tA[roleA]) +
+    roleDeviationCost(roleB, counts[memberA][roleB] + 1, tA[roleB]) +
+    roleDeviationCost(roleA, counts[memberB][roleA] + 1, tB[roleA]) +
+    roleDeviationCost(roleB, counts[memberB][roleB] - 1, tB[roleB]);
+
+  return after - before;
+}
+
+function applySwap(row, roleA, roleB, counts) {
+  const memberA = row[roleA];
+  const memberB = row[roleB];
+
+  row[roleA] = memberB;
+  row[roleB] = memberA;
+
+  counts[memberA][roleA] -= 1;
+  counts[memberA][roleB] += 1;
+  counts[memberB][roleA] += 1;
+  counts[memberB][roleB] -= 1;
+}
+
+function memberSupportOverTarget(memberName, counts, targetsByMember) {
+  return SUPPORT_ROLES.reduce((sum, role) => {
+    const actual = counts[memberName][role] || 0;
+    const target = (targetsByMember[memberName] || {})[role] || 0;
+    return sum + Math.max(0, actual - target);
+  }, 0);
+}
+
+function swapFairnessGain(row, roleA, roleB, counts, targetsByMember) {
+  const memberA = row[roleA];
+  const memberB = row[roleB];
+  if (!memberA || !memberB || memberA === memberB) return 0;
+
+  const beforeA = memberSupportOverTarget(memberA, counts, targetsByMember);
+  const beforeB = memberSupportOverTarget(memberB, counts, targetsByMember);
+  const beforeMax = Math.max(beforeA, beforeB);
+
+  const temp = {
+    [memberA]: { ...counts[memberA] },
+    [memberB]: { ...counts[memberB] },
+  };
+  temp[memberA][roleA] -= 1;
+  temp[memberA][roleB] += 1;
+  temp[memberB][roleA] += 1;
+  temp[memberB][roleB] -= 1;
+
+  const afterA = SUPPORT_ROLES.reduce((sum, role) => {
+    const actual = temp[memberA][role] || 0;
+    const target = (targetsByMember[memberA] || {})[role] || 0;
+    return sum + Math.max(0, actual - target);
+  }, 0);
+  const afterB = SUPPORT_ROLES.reduce((sum, role) => {
+    const actual = temp[memberB][role] || 0;
+    const target = (targetsByMember[memberB] || {})[role] || 0;
+    return sum + Math.max(0, actual - target);
+  }, 0);
+  const afterMax = Math.max(afterA, afterB);
+
+  return beforeMax - afterMax;
+}
+
+/**
+ * Second-pass local optimization.
+ * Performs in-week swaps that strictly reduce aggregate target deviation,
+ * prioritizing support-role over-allocation fixes.
+ */
+function secondPassBalance(schedule, membersWithTargets) {
+  const targetsByMember = {};
+  for (const member of membersWithTargets) {
+    targetsByMember[member.name] = member.targets;
+  }
+
+  const counts = createCountsMap(membersWithTargets, schedule);
+  let swapsApplied = 0;
+  const maxPasses = 4;
+  const maxSwaps = WEEKS * 3;
+
+  for (let pass = 0; pass < maxPasses; pass++) {
+    let changed = false;
+
+    for (const row of schedule) {
+      for (const supportRole of SUPPORT_ROLES) {
+        const currentMember = row[supportRole];
+        const target = (targetsByMember[currentMember] || {})[supportRole] || 0;
+        if ((counts[currentMember][supportRole] || 0) <= target) continue;
+
+        let bestRole = null;
+        let bestDelta = 0;
+        let bestFairnessGain = 0;
+        for (const otherRole of ROLES) {
+          if (otherRole === supportRole) continue;
+          const delta = swapImprovementDelta(row, supportRole, otherRole, counts, targetsByMember);
+          const fairnessGain = swapFairnessGain(row, supportRole, otherRole, counts, targetsByMember);
+          if (delta < bestDelta || (delta === bestDelta && fairnessGain > bestFairnessGain)) {
+            bestDelta = delta;
+            bestRole = otherRole;
+            bestFairnessGain = fairnessGain;
+          }
+        }
+
+        if (bestRole && (bestDelta < 0 || (bestDelta === 0 && bestFairnessGain > 0))) {
+          applySwap(row, supportRole, bestRole, counts);
+          swapsApplied += 1;
+          changed = true;
+          if (swapsApplied >= maxSwaps) return swapsApplied;
+        }
+      }
+    }
+
+    if (!changed) break;
+  }
+
+  return swapsApplied;
 }
 
 /**
@@ -180,6 +383,30 @@ function generateSchedule(config) {
 function pickMember(role, week, weeksLeft, members, assignedThisWeek, lastWeekAssigned) {
   const recency = (m) => lastWeekAssigned[m.name][role] || 0;
   const urgency = (m) => ((m.remaining[role] || 0) / weeksLeft);
+  const assignedSoFar = (m, r) => ((m.targets[r] || 0) - (m.remaining[r] || 0));
+
+  const supportSurplus = (m) => SUPPORT_ROLES.reduce((sum, supportRole) => {
+    const assigned = assignedSoFar(m, supportRole);
+    const target = m.targets[supportRole] || 0;
+    return sum + Math.max(0, assigned - target);
+  }, 0);
+
+  const fallbackScore = (m) => {
+    const target = m.targets[role] || 0;
+    const assigned = assignedSoFar(m, role);
+    const roleDeficit = target - assigned;
+    const roleSurplusAfter = Math.max(0, (assigned + 1) - target);
+
+    let penalty = roleSurplusAfter * OPTIMIZATION.roleSurplusPenalty;
+    if (SUPPORT_ROLES.includes(role)) {
+      // Strongly discourage additional support-role load once a member is already above target.
+      penalty += roleSurplusAfter * OPTIMIZATION.supportRoleExtraPenalty;
+      penalty += supportSurplus(m) * OPTIMIZATION.supportAggregatePenalty;
+    }
+
+    // Prefer members with more unmet demand for this role and less recent assignment.
+    return (roleDeficit * 50) - penalty;
+  };
 
   const withQuota = members
     .filter((m) => !assignedThisWeek.has(m.name) && (m.remaining[role] || 0) > 0)
@@ -193,7 +420,10 @@ function pickMember(role, week, weeksLeft, members, assignedThisWeek, lastWeekAs
   // No one has quota left — pick any unassigned member, least-recent for this role first
   const anyUnassigned = members
     .filter((m) => !assignedThisWeek.has(m.name))
-    .sort((a, b) => recency(a) - recency(b));
+    .sort((a, b) => {
+      const scoreDiff = fallbackScore(b) - fallbackScore(a);
+      return Math.abs(scoreDiff) > 0.001 ? scoreDiff : recency(a) - recency(b);
+    });
 
   if (anyUnassigned.length > 0) return anyUnassigned[0];
 
@@ -243,7 +473,7 @@ function main() {
   const opts = parseArgs();
 
   if (!opts.config) {
-    console.error('Usage: node generate-schedule.js --config members.json [--output schedule.csv] [--start-date YYYY-MM-DD]');
+    console.error('Usage: node generate-schedule.js --config members.json [--output schedule.csv] [--start-date YYYY-MM-DD] [--profile scale]');
     process.exit(1);
   }
 
@@ -257,12 +487,14 @@ function main() {
 
   if (opts.startDate) config.start_date = opts.startDate;
 
-  const { schedule, membersWithTargets } = generateSchedule(config);
+  const { schedule, membersWithTargets, swapsApplied } = generateSchedule(config, opts);
   const csv = toCSV(schedule);
 
   fs.writeFileSync(opts.output, csv, 'utf8');
   console.log(`\nSchedule written to: ${opts.output}`);
   console.log(`Weeks: ${schedule.length}  |  Members: ${config.members.length}  |  Total role assignments: ${schedule.length * ROLES.length}`);
+  if (opts.profile) console.log(`Profile: ${opts.profile}`);
+  console.log(`Second-pass swaps applied: ${swapsApplied}`);
 
   printSummary(membersWithTargets, schedule);
 }

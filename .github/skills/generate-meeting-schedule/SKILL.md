@@ -72,6 +72,13 @@ node .github/skills/generate-meeting-schedule/scripts/generate-schedule.js \
 Optional flags:
 - `--start-date YYYY-MM-DD` — override start date from config
 - `--output <path>` — output CSV path (default: `schedule.csv`)
+- `--profile scale` — apply built-in scale-aware goal defaults when a goal has no explicit config override
+
+Weight precedence order:
+1. Member-level `weights`
+2. Top-level config `weights[goal]`
+3. Profile defaults from `--profile` (if provided)
+4. Built-in base defaults
 
 ### 3. Review the Summary
 The script prints a per-member role count summary to stdout. Verify that:
@@ -91,6 +98,12 @@ Week,Date,Toastmaster,General Evaluator,Table Topics Master,Grammarian,Timer,Spe
 3. Member share is split across roles by their goal's weight profile
 4. Each week, roles are filled greedily: pick the member with the most remaining quota for that role, who hasn't been assigned yet that week, and who did that role least recently
 5. Ties broken by recency (avoid back-to-back same role)
+6. A second-pass in-week swap optimizer reduces support-role clustering while preserving one-role-per-member-per-week
+
+## Quality and Scale Notes
+- In larger rosters, support roles (Timer, Ah Counter, Word of the Day Master) can be over-assigned if configured goal weights collectively under-demand those roles.
+- The generator now applies a weighted penalty when assigning support roles above target and runs fairness-aware swap optimization afterward.
+- For best results at scale, ensure at least one goal profile in active use carries meaningful support-role weights so aggregate demand is not far below fixed weekly role supply.
 
 ## Pathways Alignment
 See [pathways reference](./references/pathways.md) for how each Pathway maps to a recommended goal type.

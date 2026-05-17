@@ -1,0 +1,90 @@
+{
+  "start_date": "2026-05-17",
+  "members": [
+    {
+      "name": "Mary",
+      "goal": "public_speaker",
+      "pathway": "Presentation Mastery"
+    },
+    {
+      "name": "Luke Skywalker",
+      "goal": "public_speaker"
+    },
+    {
+      "name": "Rey Skywalker",
+      "goal": "public_speaker"
+    },
+    {
+      "name": "Leia Organa",
+      "goal": "leader"
+    },
+    {
+      "name": "Ahsoka Tano",
+      "goal": "leader"
+    },
+    {
+      "name": "Obi-Wan Kenobi",
+      "goal": "leader"
+    },
+    {
+      "name": "Han Solo",
+      "goal": "balanced"
+    },
+    {
+      "name": "Finn",
+      "goal": "balanced"
+    },
+    {
+      "name": "Padme Amidala",
+      "goal": "balanced"
+    },
+    {
+      "name": "Poe Dameron",
+      "goal": "communicator"
+    },
+    {
+      "name": "Mace Windu",
+      "goal": "leader"
+    },
+    {
+      "name": "Lando Calrissian",
+      "goal": "communicator"
+    },
+    {
+      "name": "Jyn Erso",
+      "goal": "public_speaker"
+    },
+    {
+      "name": "Cassian Andor",
+      "goal": "balanced"
+    },
+    {
+      "name": "Anakin Skywalker",
+      "goal": "leader"
+    }
+  ],
+  "weights": {
+    "leader": {
+      "Toastmaster": 32,
+      "General Evaluator": 27,
+      "Table Topics Master": 21,
+      "Evaluator": 15,
+      "Speaker": 5,
+      "Grammarian": 0,
+      "Word of the Day Master": 0,
+      "Timer": 0,
+      "Ah Counter": 0
+    },
+    "balanced": {
+      "Speaker": 18,
+      "Toastmaster": 16,
+      "Table Topics Master": 14,
+      "General Evaluator": 13,
+      "Evaluator": 13,
+      "Grammarian": 8,
+      "Word of the Day Master": 7,
+      "Timer": 6,
+      "Ah Counter": 5
+    }
+  }
+}

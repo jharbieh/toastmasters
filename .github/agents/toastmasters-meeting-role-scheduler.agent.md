@@ -1,4 +1,5 @@
 ---
+name: Toastmasters International Meeting Role Scheduler
 description: "Use when generating a Toastmasters meeting role schedule, assigning club meeting roles, creating a 12-month rotation, scheduling members as Toastmaster, Speaker, Evaluator, General Evaluator, Table Topics Master, Grammarian, Timer, Ah Counter, or Word of the Day Master, or distributing roles based on member goals like public speaking or leadership."
 tools: [read, edit, execute, search]
 argument-hint: "Provide club member names, their goals (public_speaker, leader, communicator, balanced), and optionally their Pathways path and a start date."
@@ -44,11 +45,34 @@ node .github/skills/generate-meeting-schedule/scripts/generate-schedule.js \
   --output schedule.csv
 ```
 
+For larger mixed-goal rosters (for example, 12+ members), prefer:
+```bash
+node .github/skills/generate-meeting-schedule/scripts/generate-schedule.js \
+  --config members.json \
+  --profile scale \
+  --output schedule.csv
+```
+
 ### Step 5 — Report Results
 - Confirm the output file path
 - Show a role assignment summary (how many times each member fills each role)
 - Highlight if any member's distribution deviates significantly from their targets (>10% off)
 - Offer to regenerate with adjusted weights if the distribution looks wrong
+
+### Step 6 — Refine When Support Roles Are Over-Allocated
+If Timer, Ah Counter, or Word of the Day Master are repeatedly over target:
+- Add a top-level `weights` override in `members.json` for affected goal types
+- For `leader`, bias more toward Toastmaster, General Evaluator, and Table Topics Master
+- For `balanced`, keep broad exposure but reduce support roles slightly
+- For larger mixed-goal rosters, keep each support role non-trivial (often 6-10%) across all active goal profiles to reduce forced over-target assignments
+- Regenerate and compare against the prior run using the same start date and member set
+
+### Step 7 — Scalability Smoke Test
+When the user asks to ensure the system handles more members:
+- Create a temporary expanded config with additional members
+- Run the same generator script to a separate CSV output path
+- Confirm generation succeeds and output has 52 rows and all 9 role columns
+- Report the test output path and whether generation completed without errors
 
 ## Role Knowledge
 See [roles reference](../skills/generate-meeting-schedule/references/roles.md) for a description of all 9 roles and their goal alignment.
@@ -58,3 +82,11 @@ Always end with:
 1. The CSV file path
 2. A markdown summary table: Member → top 3 assigned roles with counts
 3. One suggestion for refining the schedule (e.g., weight tweak recommendation)
+
+## Practical Notes
+- With exactly one member, every role is assigned to that same person each week; weight targets are not meaningful in that case.
+- With exactly 9 members, each member is assigned one role per week. Goal-specific distributions are achievable but constrained by global role demand.
+- Prefer goal-level `weights` overrides first, and use member-level overrides only for targeted exceptions.
+- Use the generator's second-pass balancing (in-week swap optimization) to reduce support-role clustering while preserving one-role-per-member-per-week.
+- Even with second-pass balancing, hard constraints can keep some roles above target when many members share similar goal profiles; larger rosters improve fit.
+- When support-role warnings persist at scale, explain that fixed weekly supply may exceed aggregate target demand for support roles and tune goal weights accordingly.

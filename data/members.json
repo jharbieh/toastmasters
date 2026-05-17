@@ -1,0 +1,112 @@
+{
+  "start_date": "2026-05-17",
+  "members": [
+    {
+      "name": "Mary",
+      "goal": "public_speaker",
+      "pathway": "Presentation Mastery"
+    },
+    {
+      "name": "Luke Skywalker",
+      "goal": "public_speaker"
+    },
+    {
+      "name": "Rey Skywalker",
+      "goal": "public_speaker"
+    },
+    {
+      "name": "Leia Organa",
+      "goal": "leader"
+    },
+    {
+      "name": "Ahsoka Tano",
+      "goal": "leader"
+    },
+    {
+      "name": "Obi-Wan Kenobi",
+      "goal": "leader"
+    },
+    {
+      "name": "Han Solo",
+      "goal": "balanced"
+    },
+    {
+      "name": "Finn",
+      "goal": "balanced"
+    },
+    {
+      "name": "Padme Amidala",
+      "goal": "balanced"
+    },
+    {
+      "name": "Poe Dameron",
+      "goal": "communicator"
+    },
+    {
+      "name": "Mace Windu",
+      "goal": "leader"
+    },
+    {
+      "name": "Lando Calrissian",
+      "goal": "communicator"
+    },
+    {
+      "name": "Jyn Erso",
+      "goal": "public_speaker"
+    },
+    {
+      "name": "Cassian Andor",
+      "goal": "balanced"
+    },
+    {
+      "name": "Anakin Skywalker",
+      "goal": "leader"
+    }
+  ],
+  "weights": {
+    "public_speaker": {
+      "Speaker": 24,
+      "Toastmaster": 16,
+      "Table Topics Master": 12,
+      "Evaluator": 10,
+      "General Evaluator": 7,
+      "Grammarian": 9,
+      "Word of the Day Master": 8,
+      "Timer": 7,
+      "Ah Counter": 7
+    },
+    "leader": {
+      "Toastmaster": 20,
+      "General Evaluator": 18,
+      "Table Topics Master": 15,
+      "Evaluator": 13,
+      "Speaker": 8,
+      "Grammarian": 8,
+      "Word of the Day Master": 6,
+      "Timer": 6,
+      "Ah Counter": 6
+    },
+    "communicator": {
+      "Speaker": 18,
+      "Evaluator": 16,
+      "Table Topics Master": 12,
+      "Toastmaster": 10,
+      "Grammarian": 12,
+      "Word of the Day Master": 10,
+      "General Evaluator": 8,
+      "Timer": 7,
+      "Ah Counter": 7
+    },
+    "balanced": {
+      "Speaker": 14,
+      "Toastmaster": 13,
+      "Table Topics Master": 11,
+      "General Evaluator": 11,
+      "Evaluator": 11,
+      "Grammarian": 10,
+      "Word of the Day Master": 10,
+      "Timer": 10,
+      "Ah Counter": 10
+    }
+  }
+}
