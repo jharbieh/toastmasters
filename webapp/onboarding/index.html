@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Toastmasters New Member Onboarding</title>
+  <meta
+    name="description"
+    content="A modern onboarding guide for new Toastmasters members, with a chapter-based experience and downloadable ebook."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <main class="onboarding-page">
+    <header class="hero" aria-labelledby="pageTitle">
+      <a class="back-link" href="../index.html">← Back to Companion</a>
+      <p class="eyebrow">New Member Guide</p>
+      <h1 id="pageTitle">Start Strong in Toastmasters</h1>
+      <p class="lead">
+        A practical onboarding path for new members: understand the mission, choose your growth path, and make every meeting count.
+      </p>
+      <div class="hero-actions">
+        <button type="button" class="primary" id="downloadEbook">Download eBook (HTML)</button>
+        <button type="button" class="secondary" id="downloadMarkdown">Download eBook (Markdown)</button>
+      </div>
+      <p class="hero-note">
+        Built for mentors, new members, and club officers who want a clear onboarding flow.
+      </p>
+    </header>
+
+    <section class="slider-shell" aria-label="Onboarding chapters">
+      <div class="slider-controls top-controls">
+        <button type="button" id="prevSlide" class="ghost" aria-label="Previous chapter">← Previous</button>
+        <p id="chapterMeta" class="chapter-meta" aria-live="polite"></p>
+        <button type="button" id="nextSlide" class="ghost" aria-label="Next chapter">Next →</button>
+      </div>
+
+      <div id="slider" class="slider" tabindex="0"></div>
+      <div id="chapterDots" class="chapter-dots" aria-label="Chapter navigation"></div>
+
+      <div class="slider-controls bottom-controls">
+        <button type="button" class="ghost" id="jumpOverview">Jump to Overview</button>
+        <button type="button" class="primary" id="jumpBestPractices">Jump to Best Practices</button>
+      </div>
+    </section>
+
+    <section class="resource-panel" aria-labelledby="resourceTitle">
+      <div>
+        <p class="eyebrow">Official Resources</p>
+        <h2 id="resourceTitle">Trusted Toastmasters Links</h2>
+      </div>
+      <ul id="resourceList" class="resource-list"></ul>
+    </section>
+
+    <footer class="page-footer">
+      <p>
+        This onboarding guide references official Toastmasters resources and is intended for club education use.
+      </p>
+    </footer>
+  </main>
+
+  <template id="slideTemplate">
+    <article class="slide">
+      <p class="slide-kicker"></p>
+      <h2 class="slide-title"></h2>
+      <p class="slide-summary"></p>
+      <div class="slide-columns">
+        <section>
+          <h3>What to Know</h3>
+          <ul class="bullet-list" data-kind="know"></ul>
+        </section>
+        <section>
+          <h3>How to Apply It</h3>
+          <ul class="bullet-list" data-kind="apply"></ul>
+        </section>
+      </div>
+      <blockquote class="tip"></blockquote>
+    </article>
+  </template>
+
+  <script defer src="app.js"></script>
+</body>
+</html>

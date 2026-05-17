@@ -1,5 +1,5 @@
 // Enhanced service worker: core shell + stale-while-revalidate for static assets
-const CACHE = 'tm-companion-v3';
+const CACHE = 'tm-companion-v4';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,10 @@ const CORE_ASSETS = [
   './app.css',
   './app.js',
   './data.js',
+  './onboarding/',
+  './onboarding/index.html',
+  './onboarding/app.css',
+  './onboarding/app.js',
   './scheduler/',
   './scheduler/index.html',
   './scheduler/app.css',

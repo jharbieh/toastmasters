@@ -109,3 +109,35 @@ When served from the `webapp/` folder as site root, it is available at `/schedul
 - Add export formats beyond CSV, such as printable HTML and PDF.
 - Add a shareable link or encoded config so an admin can reopen a draft roster later.
 - Add member notes or preferences, such as role exclusions or preferred speaking slots.
+
+## New Member Onboarding Web App
+
+The repository now includes a dedicated onboarding guide at `webapp/onboarding/index.html`.
+
+When served from the `webapp/` folder as site root, it is available at `/onboarding/`.
+
+### Purpose
+
+- Provide a polished, chapter-based onboarding experience for new Toastmasters members.
+- Give mentors and officers a guided framework to introduce club culture, roles, Pathways, and participation expectations.
+- Offer downloadable ebook outputs for offline sharing and mentoring packets.
+
+### Included content chapters
+
+- Overview and onboarding intent
+- Toastmasters history and global presence
+- Member growth value and benefits
+- Meeting roles and active participation
+- Pathways levels and project flow
+- Club operations and officer engagement
+- What makes meetings successful
+- Speech contests and Accredited Speaker overview
+- A practical 90-day best-practices playbook
+
+### Notes on implementation
+
+- The onboarding app is fully client-side and lives under `webapp/onboarding/`.
+- It uses a horizontal slide/chapter interface with keyboard and button navigation.
+- It supports ebook downloads in both HTML and Markdown formats.
+- The main companion dashboard and sidebar now include direct navigation to the onboarding app.
+- The service worker pre-caches onboarding assets for reliable loading and better offline behavior.
