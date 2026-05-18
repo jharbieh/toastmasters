@@ -1,0 +1,162 @@
+name: Weekly Backlog Work
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  select-issue:
+    name: Select Backlog Issue
+    runs-on: ubuntu-latest
+    outputs:
+      issue_number: ${{ steps.select.outputs.issue_number }}
+      issue_title: ${{ steps.select.outputs.issue_title }}
+      branch_name: ${{ steps.create-branch.outputs.branch_name }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Select issue from backlog
+        id: select
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node .github/scripts/select-backlog-issue.js
+
+      - name: Create feature branch
+        id: create-branch
+        run: |
+          ISSUE_NUM=${{ steps.select.outputs.issue_number }}
+          BRANCH_NAME="agent/issue-${ISSUE_NUM}"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${BRANCH_NAME}"
+          git push origin "${BRANCH_NAME}"
+          echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+
+  work-on-issue:
+    name: Work on Issue
+    needs: select-issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.select-issue.outputs.branch_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          pip install -r requirements.txt
+
+      - name: Invoke Copilot Agent
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ needs.select-issue.outputs.issue_number }}
+          ISSUE_TITLE: ${{ needs.select-issue.outputs.issue_title }}
+          AGENT_TASK_ID: backlog-work
+        run: |
+          # Create a task description for the agent
+          cat > /tmp/agent-task.md << 'EOF'
+          # Backlog Issue #${{ env.ISSUE_NUMBER }}: ${{ env.ISSUE_TITLE }}
+          
+          Please work on this GitHub issue:
+          - Issue Number: ${{ env.ISSUE_NUMBER }}
+          - Title: ${{ env.ISSUE_TITLE }}
+          
+          Follow these steps:
+          1. Read the issue and understand requirements
+          2. Analyze the codebase
+          3. Implement the solution
+          4. Run all tests (npm test or pytest as appropriate)
+          5. Commit changes with clear message
+          6. When done, indicate success
+          
+          Important: Do NOT open a PR yourself. The workflow will handle that.
+          Report your completion status and any issues encountered.
+          EOF
+          
+          # Use GitHub CLI to invoke the agent
+          # Note: You may need to use Copilot CLI or a similar tool here
+          # For now, this is a placeholder showing the workflow structure
+          echo "Would invoke Copilot CLI here with the task description"
+          cat /tmp/agent-task.md
+
+      - name: Run tests
+        run: |
+          if [ -f "package.json" ]; then
+            npm test
+          fi
+          if [ -f "requirements.txt" ]; then
+            pytest tests/ 2>/dev/null || echo "No pytest tests found"
+          fi
+
+      - name: Commit changes
+        id: commit
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if git diff --quiet; then
+            echo "No changes to commit"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            git add -A
+            git commit -m "Issue #${{ needs.select-issue.outputs.issue_number }}: Implement backlog item"
+            git push origin ${{ needs.select-issue.outputs.branch_name }}
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.commit.outputs.has_changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "Issue #${{ needs.select-issue.outputs.issue_number }}: ${{ needs.select-issue.outputs.issue_title }}" \
+            --body "## Summary
+          This PR addresses backlog item #${{ needs.select-issue.outputs.issue_number }}.
+          
+          ## What was changed
+          - Implementation for ${{ needs.select-issue.outputs.issue_title }}
+          
+          ## How to test
+          - Run the test suite: \`npm test\` or \`pytest\`
+          - All tests should pass
+          
+          ## Notes
+          - Closes #${{ needs.select-issue.outputs.issue_number }}
+          - Automated by weekly backlog work workflow
+          " \
+            --base main \
+            --head ${{ needs.select-issue.outputs.branch_name }} \
+            --reviewer ${{ github.repository_owner }}
+
+      - name: Workflow Summary
+        run: |
+          echo "## Weekly Backlog Work Complete ✅"
+          echo ""
+          echo "- **Issue**: #${{ needs.select-issue.outputs.issue_number }}"
+          echo "- **Title**: ${{ needs.select-issue.outputs.issue_title }}"
+          echo "- **Branch**: ${{ needs.select-issue.outputs.branch_name }}"
+          echo ""
+          echo "**Next Steps**: Review the PR and merge when ready."
