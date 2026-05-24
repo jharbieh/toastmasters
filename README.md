@@ -2,7 +2,11 @@
 
 This repository combines lightweight utilities (banner generation, CSV data) and a modern, installable, offline‑capable web application that supports running or preparing Toastmasters meetings.
 
-![Lighthouse](badges/lighthouse.json)
+[![Lighthouse CI](https://github.com/jharbieh/toastmasters/actions/workflows/lighthouse.yml/badge.svg)](https://github.com/jharbieh/toastmasters/actions/workflows/lighthouse.yml)
+[![Weekly Backlog Work](https://github.com/jharbieh/toastmasters/actions/workflows/weekly-backlog-work.yml/badge.svg)](https://github.com/jharbieh/toastmasters/actions/workflows/weekly-backlog-work.yml)
+[![License](https://img.shields.io/github/license/jharbieh/toastmasters)](https://github.com/jharbieh/toastmasters/blob/main/LICENSE)
+![Last Commit](https://img.shields.io/github/last-commit/jharbieh/toastmasters)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/jharbieh/toastmasters)
 
 ## Table of Contents
 - [Repository Structure](#repository-structure)
