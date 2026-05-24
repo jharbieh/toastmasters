@@ -5,7 +5,12 @@ on:
     - cron: '0 9 * * 1'
   workflow_dispatch:  # Allow manual trigger
 
+concurrency:
+  group: weekly-backlog-work
+  cancel-in-progress: false
+
 permissions:
+  actions: read
   contents: write
   pull-requests: write
   issues: write
@@ -23,6 +28,51 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enforce one backlog item per week
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_FILE: weekly-backlog-work.yml
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          gh api \
+            "repos/${REPO}/actions/workflows/${WORKFLOW_FILE}/runs?per_page=100" \
+            > /tmp/workflow-runs.json
+
+          node - <<'EOF'
+          const fs = require('fs');
+          const data = JSON.parse(fs.readFileSync('/tmp/workflow-runs.json', 'utf8'));
+
+          const now = new Date();
+          const day = now.getUTCDay() || 7;
+          const weekStart = new Date(Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate() - day + 1,
+            0, 0, 0, 0
+          ));
+
+          const currentRunId = process.env.CURRENT_RUN_ID;
+          const priorRunsThisWeek = (data.workflow_runs || []).filter((run) => {
+            if (String(run.id) === String(currentRunId)) return false;
+            const created = new Date(run.created_at);
+            if (created < weekStart) return false;
+            return run.status === 'in_progress' || run.status === 'queued' || run.status === 'completed';
+          });
+
+          if (priorRunsThisWeek.length > 0) {
+            const runsSummary = priorRunsThisWeek
+              .slice(0, 3)
+              .map((run) => `#${run.run_number} (${run.status}/${run.conclusion || 'n/a'}) ${run.html_url}`)
+              .join(' | ');
+            console.log(`Weekly gate: another run already exists this week (${priorRunsThisWeek.length} total). ${runsSummary}`);
+            console.error(`::error::A backlog item has already been processed this week. See prior run: ${priorRunsThisWeek[0].html_url}`);
+            process.exit(1);
+          }
+
+          console.log(`No prior weekly backlog runs found since ${weekStart.toISOString()}.`);
+          EOF
 
       - name: Select issue from backlog
         id: select
