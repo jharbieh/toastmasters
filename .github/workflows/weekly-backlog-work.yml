@@ -84,13 +84,24 @@ jobs:
       - name: Create feature branch
         id: create-branch
         run: |
-          ISSUE_NUM=${{ steps.select.outputs.issue_number }}
-          BRANCH_NAME="agent/issue-${ISSUE_NUM}"
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -b "${BRANCH_NAME}"
-          git push origin "${BRANCH_NAME}"
-          echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+            ISSUE_NUM=${{ steps.select.outputs.issue_number }}
+            BRANCH_NAME="agent/issue-${ISSUE_NUM}"
+
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+            git fetch origin
+
+            if git ls-remote --exit-code --heads origin "${BRANCH_NAME}" >/dev/null 2>&1; then
+              echo "Branch ${BRANCH_NAME} already exists on remote; reusing it"
+              git checkout -B "${BRANCH_NAME}" "origin/${BRANCH_NAME}"
+            else
+              echo "Creating new branch ${BRANCH_NAME}"
+              git checkout -b "${BRANCH_NAME}"
+              git push -u origin "${BRANCH_NAME}"
+            fi
+
+            echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
 
   work-on-issue:
     name: Work on Issue
