@@ -173,6 +173,32 @@
 				"--output",
 				"schedule/starwars_15_schedule_profile_scale.csv"
 			]
+		},
+		{
+			"label": "generate-speech-assets",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/generate_speech_assets.js"
+			]
+		},
+		{
+			"label": "watch-speech-assets",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/generate_speech_assets.js",
+				"--watch"
+			],
+			"isBackground": true
+		},
+		{
+			"label": "generate-and-open-latest-speech-slideshow",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"scripts/generate_and_open_latest_speech_slideshow.js"
+			]
 		}
 	]
 }

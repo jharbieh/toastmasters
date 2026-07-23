@@ -11,6 +11,13 @@ Please open an issue with the `security` label describing:
 
 Do **not** include exploit code that could harm users directly. Provide a minimal proof of concept.
 
+## Accidental Secret Exposure
+If any credential (API key, token, private key, password) is discovered in this repository:
+1. Revoke/rotate the secret immediately.
+2. Remove it from the current codebase.
+3. Remove it from git history before public release.
+4. Document remediation in a security issue so collaborators understand what changed.
+
 ## Best Practices Followed
 - No external third-party analytics scripts (privacy focus)
 - Content Security (implicit) by avoiding inline event handlers; minimal inline script (SW registration only)

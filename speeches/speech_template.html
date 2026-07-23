@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Speech Title</title>
+  <meta name="description" content="Toastmasters speech slide deck." />
+  <link rel="stylesheet" href="slides.css" />
+</head>
+<body>
+  <main class="deck" aria-live="polite">
+    <section class="slide active" id="slide-1" aria-hidden="false">
+      <article class="card">
+        <p class="kicker">Toastmasters Speech</p>
+        <h1>Your Speech Title</h1>
+        <p class="lead">Optional subtitle or speech objective.</p>
+      </article>
+    </section>
+
+    <section class="slide" id="slide-2" aria-hidden="true">
+      <article class="card">
+        <p class="kicker">Section</p>
+        <h2>Main Idea</h2>
+        <p>Add the key point you want to present on this slide.</p>
+      </article>
+    </section>
+
+    <section class="slide" id="slide-3" aria-hidden="true">
+      <article class="card">
+        <p class="kicker">Closing</p>
+        <h2>Call to Action</h2>
+        <p>End with one clear message the audience should remember.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="controls" aria-label="Slide controls">
+    <div class="controls-left">
+      <button type="button" data-action="prev" aria-label="Previous slide">Previous</button>
+      <button type="button" data-action="next" aria-label="Next slide">Next</button>
+      <span class="hint">Keys: Left/Right, PageUp/PageDown, Space</span>
+    </div>
+    <div class="progress-wrap" aria-label="Presentation progress">
+      <div class="progress" role="progressbar" aria-label="Slide progress" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">Slide 1/3</span>
+    </div>
+  </footer>
+
+  <script src="slides.js"></script>
+</body>
+</html>

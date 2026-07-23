@@ -42,6 +42,14 @@ Argument details:
 - `--d106`: path to the district report CSV file (default: `data/d106.csv`)
 - `--start-id`: base integer for generated IDs; first generated ID is `start-id + 1` (default: `900000`)
 
+### Public repository guidance
+
+Before publishing data updates publicly:
+
+1. Run the anonymizer to scrub club-identifying fields where appropriate.
+2. Review changed CSV files for direct personal identifiers (emails, phone numbers, addresses).
+3. Prefer committing anonymized samples for demos and tests.
+
 ## Scheduler Work Summary
 
 Recent scheduler improvements focused on quality and scalability for 52-week role planning.

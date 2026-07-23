@@ -43,6 +43,7 @@
         <li><button data-view="wod" class="nav-link">Word of the Day</button></li>
         <li><button data-view="themes" class="nav-link">Themes</button></li>
         <li><button data-view="timer" class="nav-link">Speech Timer</button></li>
+          <li><button data-view="speeches" class="nav-link">Speech Index</button></li>
         <li><button data-view="resources" class="nav-link">Resources</button></li>
   <li><button data-view="clubs" class="nav-link">Clubs Data</button></li>
   <li><button data-view="why" class="nav-link">Why Toastmasters</button></li>
@@ -83,6 +84,14 @@
           <h3>Open Timer</h3>
           <p>Visual multi-phase speech timer with color cues.</p>
           <button class="primary" data-view="timer">Launch Timer</button>
+        </article>
+        <article class="card">
+          <h3>Browse Speeches</h3>
+          <p>Open any generated speech slideshow from your speech library.</p>
+          <div class="controls">
+            <button class="primary" data-view="speeches">Open Speech Index</button>
+            <button data-action="open-latest-speech">Open Latest Speech</button>
+          </div>
         </article>
       </div>
       <div class="stack gap-lg" id="quickResults" aria-live="polite"></div>
@@ -151,6 +160,27 @@
         </div>
       </form>
       <div id="timerDisplay" class="timer-display" role="timer" aria-live="assertive">00:00</div>
+    </section>
+
+    <section data-screen="speeches" id="speechesSection">
+      <h2>Speech Index</h2>
+      <div class="section-controls"><button type="button" data-action="go-dashboard" class="back-btn">← Dashboard</button></div>
+      <p class="muted">Browse generated speech slideshows and open the deck you want to present.</p>
+      <form class="speech-filters" autocomplete="off" role="search" aria-label="Speech filters">
+        <label>Search Speeches
+          <input type="text" id="speechSearch" placeholder="Search by title or file name" />
+        </label>
+        <label>Sort
+          <select id="speechSort">
+            <option value="updated-desc" selected>Newest first</option>
+            <option value="updated-asc">Oldest first</option>
+            <option value="title-asc">Title A-Z</option>
+            <option value="title-desc">Title Z-A</option>
+          </select>
+        </label>
+      </form>
+      <div id="speechesStatus" class="speeches-status" aria-live="polite">Open this section to load speech index.</div>
+      <div id="speechList" class="speech-list" aria-live="polite"></div>
     </section>
 
     <section data-screen="resources" id="resourceSection">

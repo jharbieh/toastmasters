@@ -17,6 +17,9 @@ let toastTimeout; // moved up to avoid TDZ in toast()
 let firstActionDone = { topics:false, wod:false, theme:false };
 let clubsData = null;
 let clubsLoaded = false;
+let speechesData = [];
+let speechesLoaded = false;
+let speechFiltersReady = false;
 
 // Navigation & theming
 autoInit();
@@ -119,6 +122,10 @@ function activateScreen(name){
   if(name==='roles' && !qs('#roleGrid').hasChildNodes()) renderRoles();
   if(name==='resources' && !qs('#resourceList').hasChildNodes()) renderResources();
   if(name==='clubs' && !clubsLoaded) loadClubsData();
+  if(name==='speeches'){
+    if(!speechesLoaded) loadSpeechesData();
+    else renderSpeeches();
+  }
   updateFab(name);
 }
 function setupTheme(){
@@ -214,6 +221,139 @@ function renderResources(){
   });
 }
 
+// Speech Index
+async function loadSpeechesData(){
+  const status = qs('#speechesStatus');
+  if(status) status.textContent = 'Loading speech index...';
+  try {
+    const res = await fetch('../speeches/index.json');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const payload = await res.json();
+    speechesData = Array.isArray(payload.speeches) ? payload.speeches : [];
+    speechesLoaded = true;
+    if(status) status.textContent = `Loaded ${speechesData.length} speech(es).`;
+    setupSpeechFilters();
+    renderSpeeches();
+  } catch(e){
+    speechesData = [];
+    speechesLoaded = false;
+    if(status) status.textContent = 'Could not load speech index. Run speech asset generation and refresh.';
+    const list = qs('#speechList');
+    if(list){
+      list.innerHTML = '<article class="speech-card speech-empty"><h3>Speech index unavailable</h3><p>Run <code>node scripts/generate_speech_assets.js</code> to create <code>speeches/index.json</code>.</p></article>';
+    }
+    recordError('speech-index-load', e.message||e);
+  }
+}
+
+function setupSpeechFilters(){
+  if(speechFiltersReady) return;
+  const search = qs('#speechSearch');
+  const sort = qs('#speechSort');
+  if(search) search.addEventListener('input', debounce(renderSpeeches, 150));
+  if(sort) sort.addEventListener('change', renderSpeeches);
+  speechFiltersReady = true;
+}
+
+function renderSpeeches(){
+  const list = qs('#speechList');
+  const status = qs('#speechesStatus');
+  const searchTerm = qs('#speechSearch')?.value.toLowerCase().trim() || '';
+  const sortMode = qs('#speechSort')?.value || 'updated-desc';
+  if(!list) return;
+
+  const filtered = speechesData.filter(s=>{
+    const hay = `${s.title || ''} ${s.id || ''}`.toLowerCase();
+    return !searchTerm || hay.includes(searchTerm);
+  });
+  const sorted = sortSpeeches(filtered, sortMode);
+
+  if(status){
+    const suffix = searchTerm ? ' (filtered)' : '';
+    status.textContent = `${sorted.length} speech(es) shown${suffix}.`;
+  }
+
+  if(!sorted.length){
+    list.innerHTML = '<article class="speech-card speech-empty"><h3>No speeches found</h3><p>Try a different search or generate more speech assets.</p></article>';
+    return;
+  }
+
+  list.innerHTML = sorted.map((speech)=>{
+    const href = `../${speech.htmlPath || ''}`;
+    const updated = speech.updatedAt ? new Date(speech.updatedAt) : null;
+    const updatedText = updated && !Number.isNaN(updated.valueOf())
+      ? updated.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' })
+      : 'Unknown';
+    const summary = speech.summary || 'Generated Toastmasters speech slideshow.';
+
+    return `<article class="speech-card">
+      <h3>${escapeHtml(speech.title || speech.id || 'Untitled speech')}</h3>
+      <p class="speech-summary">${escapeHtml(summary)}</p>
+      <p class="speech-meta">File: ${escapeHtml(speech.id || 'unknown')}<br />Updated: ${escapeHtml(updatedText)}</p>
+      <a class="primary" href="${escapeHtml(href)}" target="_blank" rel="noopener">Open Slideshow</a>
+    </article>`;
+  }).join('');
+}
+
+function sortSpeeches(items, sortMode){
+  const copy = [...items];
+  const byTitle = (a, b) => (a.title || '').localeCompare(b.title || '');
+  const byUpdated = (a, b) => {
+    const aMs = a.updatedAt ? new Date(a.updatedAt).valueOf() : 0;
+    const bMs = b.updatedAt ? new Date(b.updatedAt).valueOf() : 0;
+    return aMs - bMs;
+  };
+
+  switch(sortMode){
+    case 'updated-asc':
+      copy.sort((a, b)=> byUpdated(a, b) || byTitle(a, b));
+      break;
+    case 'title-asc':
+      copy.sort((a, b)=> byTitle(a, b));
+      break;
+    case 'title-desc':
+      copy.sort((a, b)=> byTitle(b, a));
+      break;
+    case 'updated-desc':
+    default:
+      copy.sort((a, b)=> byUpdated(b, a) || byTitle(a, b));
+      break;
+  }
+
+  return copy;
+}
+
+async function openLatestSpeech(){
+  try {
+    let entries = speechesData;
+    if(!entries.length){
+      const res = await fetch('../speeches/index.json');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const payload = await res.json();
+      entries = Array.isArray(payload.speeches) ? payload.speeches : [];
+      speechesData = entries;
+      speechesLoaded = true;
+      setupSpeechFilters();
+    }
+
+    if(!entries.length){
+      toast('No speech decks found in index.');
+      return;
+    }
+
+    const latest = sortSpeeches(entries, 'updated-desc')[0];
+    if(!latest || !latest.htmlPath){
+      toast('Latest speech deck path is missing.');
+      return;
+    }
+
+    window.open(`../${latest.htmlPath}`, '_blank', 'noopener');
+  } catch(e){
+    toast('Could not open latest speech. Generate speech assets first.');
+    recordError('open-latest-speech', e.message || e);
+  }
+}
+
 // Timer
 function applyPreset(e){
   const opt = e.target.selectedOptions[0];
@@ -286,6 +426,7 @@ function attachActions(){
   case 'go-dashboard': activateScreen('dashboard'); break;
     case 'toggle-resources': toggleResources(); break;
   case 'reset-club-filters': resetClubFilters(); break;
+  case 'open-latest-speech': openLatestSpeech(); break;
     }
   if(action) trackEvent(action);
   });

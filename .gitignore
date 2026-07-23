@@ -1,1 +1,38 @@
+# Environment files (commit only templates/examples)
 .env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*.code-workspace
+
+# Credentials / certificates
+*.pem
+*.p12
+*.pfx
+*.key
+
+# Local build/output scratch
+dist/
+build/
+coverage/

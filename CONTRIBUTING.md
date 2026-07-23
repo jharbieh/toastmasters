@@ -64,6 +64,23 @@ Use any static server you prefer. Service worker requires http/https origin (fil
 - Do not add third-party analytics scripts.
 - Avoid embedding user-submitted HTML without sanitization (escape dynamic strings via helper like `escapeHtml`).
 - Keep service worker scope limited and version bump cache when altering core asset list.
+- Never commit real credentials, API keys, private keys, or local `.env` files.
+
+Pre-PR safety checks:
+```bash
+# Expect output to contain only .env.example (if anything)
+git ls-files .env .env.*
+
+# Look for common credential/token signatures in tracked files
+git grep -nE "AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}|-----BEGIN (RSA|OPENSSH|EC|DSA|PRIVATE) KEY-----"
+```
+
+If a secret is discovered:
+1. Revoke/rotate the secret immediately.
+2. Remove it from code and commit history.
+3. Open a security issue referencing remediation steps.
+
+Note: CI runs [secret-scan.yml](.github/workflows/secret-scan.yml) on push/PR to catch credential leaks early.
 
 ## Submitting a Pull Request
 1. Fork & branch.

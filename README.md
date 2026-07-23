@@ -23,6 +23,8 @@ This repository combines lightweight utilities (banner generation, CSV data) and
 	- [Running Locally](#running-locally)
 	- [Development Notes](#development-notes)
 - [Data Files](#data-files)
+- [Speech Automation](#speech-automation)
+- [Public Release Checklist](#public-release-checklist)
 - [Extending](#extending)
 - [Contributing](#contributing)
 
@@ -153,6 +155,73 @@ No build or dependency install is required for the web app (vanilla ES modules).
 - `data/resources.csv` – curated list of links rendered in Resources section
 - `data/d106_fy26.csv` – District 106 club dataset powering the Clubs Data Explorer
 - `quotes.csv`, `wod.csv`, etc. – additional datasets (not all currently surfaced in UI)
+
+## Speech Automation
+Speech authoring in `speeches/` now supports automatic generation from plain text source files.
+
+Convention:
+- Source files must be named `speech_*.txt`
+- Generated files are created in the same folder with the same base name:
+	- `speech_name.md`
+	- `speech_name.html`
+- A speech manifest is also generated for the main web app:
+	- `speeches/index.json`
+	- Entries include `title`, `summary`, paths, and `updatedAt` for sorting/latest-open workflows
+
+Commands:
+```powershell
+# Generate assets for all speech_*.txt files in speeches/
+node scripts/generate_speech_assets.js
+
+# Generate assets for one file
+node scripts/generate_speech_assets.js --file speeches/speech_my_topic.txt
+
+# Watch speeches/ and auto-regenerate when files change
+node scripts/generate_speech_assets.js --watch
+
+# Generate assets and open the latest slideshow in your browser
+node scripts/generate_and_open_latest_speech_slideshow.js
+```
+
+VS Code tasks:
+- `generate-speech-assets`
+- `watch-speech-assets`
+- `generate-and-open-latest-speech-slideshow`
+
+One-click present flow:
+- Run `generate-and-open-latest-speech-slideshow` to regenerate all `speech_*.txt` assets and open the most recently updated slideshow HTML in your default browser.
+
+Notes:
+- The slideshow HTML uses shared assets in `speeches/slides.css` and `speeches/slides.js`.
+- In watch mode, dropping or editing a `speech_*.txt` file regenerates matching markdown and slideshow files.
+- The main web app Speech Index screen reads `speeches/index.json` to list and open available speech decks.
+- The Speech Index UI supports search + sort (newest/oldest/title), and the Dashboard includes an **Open Latest Speech** quick action.
+
+## Public Release Checklist
+Before publishing to a public GitHub repository, run this quick checklist.
+
+1. Verify local secret files are not tracked.
+```powershell
+git ls-files .env .env.*
+```
+Expected: only `.env.example` should appear.
+
+2. Scan tracked files for obvious secrets.
+```powershell
+git grep -nE "AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}|-----BEGIN (RSA|OPENSSH|EC|DSA|PRIVATE) KEY-----"
+```
+
+3. If a secret was ever committed, rotate it immediately and remove it from history before making the repo public.
+
+4. Review datasets for personal information (names, emails, phone numbers) and anonymize if needed.
+
+5. Keep using `.env.example` for placeholders only; never store real keys in committed files.
+
+6. Confirm `.gitignore` includes environment files and key material (already configured in this repo).
+
+7. Optionally enable GitHub secret scanning and push protection in repository settings.
+
+8. CI now runs a secret scan workflow on pushes and pull requests: [secret-scan.yml](.github/workflows/secret-scan.yml).
 
 ## Extending
 Ideas / low‑risk enhancements:
